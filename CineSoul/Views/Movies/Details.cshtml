@@ -1,0 +1,295 @@
+﻿@model CineSoul.ApiModels.TmdbDto
+
+@* 1. RAZOR SERVİSLERİNİ VE MODELLERİ TANIMLA *@
+@using Microsoft.AspNetCore.Identity
+@using CineSoul.Models
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = @Model.Title + " Detay";
+
+    var trailerKey = Model.Videos?.Results?.FirstOrDefault(v => v.Site == "YouTube" && v.Type == "Trailer")?.Key;
+    var trailerUrl = !string.IsNullOrEmpty(trailerKey) ? $"https://www.youtube.com/embed/{trailerKey}" : null;
+
+    var directorName = Model.Credits?.Crew?.FirstOrDefault(c => c.Job == "Director")?.Name;
+    var castNames = Model.Credits?.Cast?.Take(5).Select(c => c.Name);
+
+    // ViewBag'den listeleri çekiyoruz
+    var userLists = ViewBag.UserLists as List<UserList> ?? new List<UserList>();
+
+    var tmdbMovieId = Model.Id;
+}
+
+<style>
+    /* Arka plan resminin daha iyi görünmesi için basit bir stil */
+    .movie-header {
+        position: relative;
+        min-height: 70vh;
+        padding-top: 5rem;
+    }
+
+    .detail-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        /* Koyu degrade ekleyerek yazıların okunmasını kolaylaştırır */
+        background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0.9) 100%);
+        z-index: 1;
+    }
+
+    .detail-content {
+        position: relative;
+        z-index: 2;
+    }
+</style>
+
+<div class="container-fluid text-white movie-header"
+     style="background-image: url('https://image.tmdb.org/t/p/original@Model.Backdrop_Path');
+            background-size: cover; background-position: center;">
+
+    <div class="detail-overlay"></div>
+
+    <div class="container detail-content py-5">
+        <div class="row align-items-start">
+
+            <div class="col-md-4 col-lg-3 text-center mb-4">
+                <img src="https://image.tmdb.org/t/p/w500@Model.Poster_Path"
+                     class="img-fluid rounded shadow-lg border border-secondary"
+                     alt="@Model.Title"
+                     style="max-height: 450px; width: 100%; object-fit: cover;">
+
+                @if (!string.IsNullOrEmpty(trailerUrl))
+                {
+                    <button type="button" class="btn btn-danger btn-lg w-100 mt-3" data-bs-toggle="modal" data-bs-target="#trailerModal">
+                        <i class="fas fa-play me-2"></i> Fragmanı İzle
+                    </button>
+                }
+
+                @* LİSTE EKLEME/ÇIKARMA ALANI *@
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="mt-3 p-3 bg-dark rounded border border-secondary">
+                        <h6 class="text-white mb-2">Listenize Ekleyin:</h6>
+
+                        @* Liste Seçimi (Select) *@
+                        <select id="listSelector" class="form-select mb-2">
+                            <option value="" disabled selected>-- Bir Liste Seçin --</option>
+                            @if (userLists.Any())
+                            {
+                                @foreach (var list in userLists)
+                                {
+                                    // Filmin bu listede olup olmadığını kontrol et
+                                    var isAdded = list.MovieIds.Contains(tmdbMovieId);
+                                    // Filmin listede olup olmadığına göre metni ayarla
+                                    var optionText = $"{list.Name} ({(isAdded ? "Eklendi" : "Ekle")})";
+                                    <option value="@list.Id" data-is-added="@isAdded.ToString().ToLower()">@optionText</option>
+                                }
+                            }
+                            else
+                            {
+                                <option disabled>Liste bulunamadı. Yeni bir liste oluşturun!</option>
+                            }
+                        </select>
+
+                        @* Dinamik Ekle/Çıkar Butonu *@
+                        <button id="toggleButton" class="btn btn-outline-primary w-100" disabled>
+                            <i class="fas fa-plus-circle me-2"></i> Listeye Ekle
+                        </button>
+                    </div> @* HATA DÜZELTME: Bu div'in kapanış etiketi eksikti *@
+                }
+                else
+                {
+                    // Giriş yapmamış kullanıcılar için uyarı
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light w-100 mt-3">
+                        <i class="fas fa-user-lock me-2"></i> Giriş Yap & Listeye Ekle
+                    </a>
+                }
+                @* LİSTE EKLEME/ÇIKARMA ALANININ SONU *@
+            </div>
+
+            <div class="col-md-8 col-lg-9 pt-md-5">
+                <h1 class="display-4 fw-bold">@Model.Title (@(Model.Release_Date?.Substring(0, 4)))</h1>
+                <p class="lead text-warning">@Model.Tagline</p>
+
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-warning text-dark me-3 fs-5">@Model.Vote_Average.ToString("F1") ⭐</span>
+                    <span class="text-muted fs-6 me-3">@Model.Runtime dakika</span>
+                    <span class="text-muted fs-6">@Model.Release_Date</span>
+                </div>
+
+                <p class="mb-4"><strong>Türler:</strong> @(string.Join(", ", Model.Genres?.Select(g => g.Name) ?? new List<string> { "Belirtilmemiş" }))</p>
+
+                <hr class="text-secondary">
+
+                <h3 class="mb-2">Konu Özeti</h3>
+                <p class="fs-6">@Model.Overview</p>
+
+                <div class="mt-4">
+                    <p class="mb-1"><strong>Yönetmen:</strong> <span class="text-info">@(directorName ?? "Bilinmiyor")</span></p>
+                    <p class="mb-1"><strong>Oyuncular:</strong> <span class="text-info">@(castNames != null && castNames.Any() ? string.Join(", ", castNames) : "Bilinmiyor")</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(trailerUrl))
+{
+    <div class="modal fade" id="trailerModal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="trailerModalLabel">@Model.Title Fragmanı</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="ratio ratio-16x9">
+                        <iframe id="trailerIframe"
+                                src="@trailerUrl"
+                                title="YouTube video player"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Modal kapatıldığında video oynatmayı durdurur
+        var trailerModal = document.getElementById('trailerModal');
+        trailerModal?.addEventListener('hidden.bs.modal', function () {
+            var iframe = document.getElementById('trailerIframe');
+            if (iframe) {
+                // iframe.src = iframe.src; yerine aşağıdaki daha temiz yöntem kullanıldı
+                iframe.setAttribute('src', iframe.getAttribute('src'));
+            }
+        });
+
+        // ===========================================
+        // AJAX FONKSİYONU (GLOBAL KULLANIM İÇİN)
+        // ===========================================
+        function toggleMovieInList(listId, tmdbMovieId, element) {
+            if (!listId || !tmdbMovieId) {
+                alert("Liste veya film ID'si eksik.");
+                return;
+            }
+
+            const originalText = element.innerHTML;
+            element.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> İşleniyor...';
+            element.disabled = true;
+
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            fetch('/UserList/ToggleMovie', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ listId: parseInt(listId), tmdbMovieId: parseInt(tmdbMovieId) })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Sunucu hatası veya yetkilendirme sorunu (" + response.status + ")");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const listSelector = document.getElementById('listSelector');
+                const selectedOption = listSelector.options[listSelector.selectedIndex];
+
+                if (data.success) {
+                    // Seçenek ve buton durumunu güncelle
+                    if (data.added) {
+                        selectedOption.setAttribute('data-is-added', 'true');
+                        selectedOption.text = selectedOption.text.replace('(Ekle)', '(Eklendi)');
+                    } else {
+                        selectedOption.setAttribute('data-is-added', 'false');
+                        selectedOption.text = selectedOption.text.replace('(Eklendi)', '(Ekle)');
+                    }
+
+                    // Dinamik buton durumunu güncelle
+                    updateToggleButton(data.added);
+                    alert(data.message);
+                } else {
+                    alert("İşlem başarısız: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                alert("Bir hata oluştu: " + error.message);
+            })
+            .finally(() => {
+                element.disabled = false;
+                if (element.innerHTML.includes("İşleniyor")) {
+                     const listSelector = document.getElementById('listSelector');
+                     const selectedOption = listSelector.options[listSelector.selectedIndex];
+                     const isAdded = selectedOption.getAttribute('data-is-added') === 'true';
+                     updateToggleButton(isAdded);
+                }
+            });
+        }
+    </script>
+
+    @* Sadece kullanıcı giriş yaptıysa çalışacak scriptler (Hata veren @if bloğu düzeltildi) *@
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <script>
+            // Bu script bloğu sadece Razor koşulu sağlanırsa render edilir
+            const tmdbId = @Model.Id;
+            const listSelector = document.getElementById('listSelector');
+            const toggleButton = document.getElementById('toggleButton');
+
+            // Butonun başlangıç metnini ve rengini ayarlar
+            function updateToggleButton(isAdded) {
+                if (isAdded) {
+                    toggleButton.classList.remove('btn-outline-primary');
+                    toggleButton.classList.add('btn-danger');
+                    toggleButton.innerHTML = '<i class="fas fa-minus-circle me-2"></i> Listeden Çıkar';
+                } else {
+                    toggleButton.classList.remove('btn-danger');
+                    toggleButton.classList.add('btn-outline-primary');
+                    toggleButton.innerHTML = '<i class="fas fa-plus-circle me-2"></i> Listeye Ekle';
+                }
+            }
+
+            // Liste seçimi değiştiğinde butonu günceller
+            listSelector?.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const listId = selectedOption.value;
+
+                if (listId) {
+                    const isAdded = selectedOption.getAttribute('data-is-added') === 'true';
+                    toggleButton.disabled = false;
+                    updateToggleButton(isAdded);
+                } else {
+                    toggleButton.disabled = true;
+                    toggleButton.innerHTML = '<i class="fas fa-plus-circle me-2"></i> Listeye Ekle';
+                }
+            });
+
+            // Başlangıçta listenin boş seçili olması durumunda butonu devre dışı bırak
+            if (listSelector && !listSelector.value) {
+                toggleButton.disabled = true;
+            }
+
+            // Butona tıklama olayı
+            toggleButton?.addEventListener('click', function() {
+                const listId = listSelector.value;
+                toggleMovieInList(listId, tmdbId, this);
+            });
+        </script>
+    }
+
+    @* İstemci tarafı doğrulama için gerekli *@
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

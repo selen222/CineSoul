@@ -1,0 +1,67 @@
+﻿@* Manşet Filmleri için özel Partial View *@
+@model IEnumerable<CineSoul.Models.Movie>
+
+<div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+
+    <div class="carousel-inner">
+        @{
+            int index = 0;
+        }
+        @foreach (var movie in Model.Take(5)) // İlk 5 filmi manşette gösterelim
+        {
+            <div class="carousel-item @(index == 0 ? "active" : "")">
+
+                @* ✅ URL DÜZELTİLDİ: FullBackdropUrl özelliği doğru sözdizimi ile kullanılıyor *@
+                <div class="hero-backdrop" style="background-image: url('@movie.FullBackdropUrl');">
+                    <div class="overlay-gradient"></div>
+
+                    <div class="carousel-caption d-none d-md-block text-start w-50 pb-5">
+                        <h1 class="display-3 fw-bold text-white">@movie.Title</h1>
+                        <p class="fs-5">@movie.Overview</p>
+
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-danger btn-lg mt-3 me-2">
+                            <i class="fas fa-play me-2"></i> Hemen İzle
+                        </a>
+                        <button class="btn btn-outline-light btn-lg mt-3">
+                            <i class="fas fa-plus me-2"></i> Listeme Ekle
+                        </button>
+                    </div>
+                </div>
+            </div>
+            index++;
+        }
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<style>
+    .hero-backdrop {
+        height: 70vh; /* Ekran yüksekliğinin %70'i */
+        background-size: cover;
+        background-position: center top;
+        position: relative;
+    }
+
+    .overlay-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+    }
+
+    .carousel-caption {
+        bottom: 10%;
+        left: 5%;
+        right: auto;
+    }
+</style>

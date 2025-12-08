@@ -1,0 +1,52 @@
+﻿@* Bu Partial View, film listesini (IEnumerable<Movie>) model olarak alır *@
+@model IEnumerable<CineSoul.Models.Movie>
+@{
+    // ViewData'dan Karusel ID'sini alıyoruz (Örn: "trending" veya "popular")
+    string carouselId = ViewData["CarouselId"]?.ToString() ?? "default";
+}
+
+<div class="d-flex overflow-auto p-2" style="gap: 15px;">
+    @foreach (var movie in Model)
+    {
+        <div class="flex-shrink-0" style="width: 180px;">
+            <div class="card bg-dark text-white border-0 h-100 position-relative">
+
+                <a href="@Url.Action("Details", "Movies", new { id = movie.Id })">
+
+                    @* ✅ POSTER URL DÜZELTİLDİ: FullPosterUrl özelliği kullanılıyor *@
+                    <img src="@movie.FullPosterUrl"
+                         class="card-img-top rounded"
+                         alt="@movie.Title"
+                         style="height: 270px; object-fit: cover; border: 1px solid #444;">
+                </a>
+
+                <div class="overlay position-absolute w-100 h-100 d-flex flex-column justify-content-center align-items-center rounded"
+                     style="top: 0; left: 0; background: rgba(0, 0, 0, 0.7); opacity: 0; transition: opacity 0.2s; pointer-events: none;">
+
+                    <h6 class="text-center mb-2 px-1 text-truncate" style="max-width: 90%;">@movie.Title</h6>
+                    <small class="text-warning">@movie.VoteAverage ⭐</small>
+
+                    <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-danger btn-sm mt-2">
+                        ▶️ İzle
+                    </a>
+
+                    <button class="btn btn-outline-light btn-sm mt-1">+ Listem</button>
+                </div>
+
+                <div class="card-body p-1 text-center">
+                    <p class="card-text mb-0 text-truncate">@movie.Title</p>
+                    <small class="text-muted">@movie.Year</small>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Basit Hover Efekti (Gerçek projede CSS daha iyidir)
+            document.querySelectorAll('.card').forEach(card => {
+                const overlay = card.querySelector('.overlay');
+                card.addEventListener('mouseenter', () => overlay.style.opacity = '1');
+                card.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+            });
+        </script>
+    }
+</div>

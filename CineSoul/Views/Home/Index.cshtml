@@ -1,0 +1,47 @@
+﻿@* ViewModel'i tanımlayın *@
+@model CineSoul.ViewModels.HomeViewModel
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="container-fluid p-0">
+
+    <div class="hero-section mb-5">
+
+        @if (Model?.HeroCarouselMovies != null && Model.HeroCarouselMovies.Any())
+        {
+            <partial name="_HeroCarousel" model="Model.HeroCarouselMovies" />
+        }
+        else
+        {
+            <div class="p-5 text-center bg-secondary text-white">Manşet Filmleri Yüklenemedi.</div>
+        }
+
+    </div>
+
+    <div class="container">
+
+        <h2 class="text-danger mb-3">🔥 Trendler</h2>
+        @if (Model?.TrendingMovies != null && Model.TrendingMovies.Any())
+        {
+            <partial name="_MovieCarousel" model="Model.TrendingMovies" />
+        }
+        <hr class="my-4 border-secondary opacity-25" />
+
+        <h2 class="text-danger mb-3">🆕 Yeni Çıkanlar</h2>
+        @if (Model?.NewReleases != null && Model.NewReleases.Any())
+        {
+            <partial name="_MovieCarousel" model="Model.NewReleases" />
+        }
+        <hr class="my-4 border-secondary opacity-25" />
+
+        <h2 class="text-danger mb-3">🔜 Yakında</h2>
+        @if (Model?.ComingSoon != null && Model.ComingSoon.Any())
+        {
+            <partial name="_MovieCarousel" model="Model.ComingSoon" />
+        }
+
+    </div>
+
+</div>

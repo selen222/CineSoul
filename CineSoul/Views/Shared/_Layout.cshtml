@@ -1,0 +1,81 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using CineSoul.Models
+@inject SignInManager<AppUser> SignInManager
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CineSoul</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CineSoul.styles.css" asp-append-version="true" />
+</head>
+<body class="bg-dark text-white">
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom box-shadow mb-3 fixed-top">
+            <div class="container-fluid container">
+
+                <a class="navbar-brand text-danger fw-bold fs-4" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-film me-2"></i>CineSoul
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-area="" asp-controller="Movies" asp-action="Index">Filmler</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-area="" asp-controller="Profile" asp-action="Index">Profilim</a>
+                        </li>
+                    </ul>
+
+                    @* ARAMA ÇUBUĞU GERİ EKLENDİ *@
+                    <form class="d-flex me-3" asp-controller="Movies" asp-action="Search" method="get">
+                        <input class="form-control"
+                               type="search"
+                               placeholder="Film ara..."
+                               aria-label="Search"
+                               name="query">
+                        <button class="btn btn-outline-danger ms-2" type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+
+                    <partial name="_LoginPartial" />
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @* HATA ÇÖZÜMÜ BURADA! RenderBody ekleniyor *@
+    <div class="container" style="margin-top: 80px;">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @* FOOTER KISMI EKLENDİ *@
+    <footer class="border-top footer text-muted bg-dark">
+        <div class="container text-center">
+            &copy; 2025 - CineSoul - Gizlilik
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

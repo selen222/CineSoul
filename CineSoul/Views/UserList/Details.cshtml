@@ -1,0 +1,40 @@
+﻿@model CineSoul.Models.UserList
+@using CineSoul.Models
+
+@{
+    ViewData["Title"] = Model.Name;
+    var movies = ViewBag.Movies as List<Movie>;
+}
+
+<h2 class="text-warning mt-4">@Model.Name</h2>
+<p class="text-white-50">@Model.Description</p>
+<hr class="text-secondary" />
+
+@if (movies != null && movies.Any())
+{
+    <h4 class="text-white mb-3">Filmler (@movies.Count)</h4>
+    <div class="row">
+        @foreach (var movie in movies)
+        {
+            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                <div class="card bg-dark text-white border-secondary">
+                    <img src="@($@"https://image.tmdb.org/t/p/w500{movie.PosterPath}")" class="card-img-top" alt="@movie.Title" />
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate">@movie.Title</h6>
+                        <p class="card-text small text-white-50">@movie.ReleaseDate?.Year</p>
+                        <a asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Id" class="btn btn-sm btn-outline-info">Detay</a>
+
+                        @* Film Çıkarma Butonu - AJAX ile desteklenmesi gerekir *@
+                        <button class="btn btn-sm btn-outline-danger float-end" onclick="removeMovie(@Model.Id, @movie.Id)">Çıkar</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        Bu listede henüz film bulunmuyor.
+    </div>
+}

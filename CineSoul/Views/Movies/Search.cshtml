@@ -1,0 +1,49 @@
+﻿@model List<CineSoul.Models.Movie>
+
+@{
+    var query = ViewBag.SearchQuery as string;
+    ViewData["Title"] = $"'{query}' İçin Arama Sonuçları";
+}
+
+<h2 class="text-white mt-4">@ViewData["Title"]</h2>
+<hr class="text-secondary" />
+
+@if (Model != null && Model.Any())
+{
+    <p class="text-info">Toplam **@Model.Count** film bulundu.</p>
+
+    <div class="row">
+        @foreach (var movie in Model)
+        {
+            // Poster yoksa filmi göstermeyi atlayabilirsiniz (veya varsayılan resim koyabilirsiniz)
+            if (string.IsNullOrEmpty(movie.PosterPath))
+            {
+                continue;
+            }
+
+            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                <div class="card bg-dark text-white h-100 border-secondary">
+                    <img src="@($"https://image.tmdb.org/t/p/w500{movie.PosterPath}")"
+                         class="card-img-top"
+                         alt="@movie.Title"
+                         style="height: 350px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-truncate text-warning">@movie.Title</h5>
+                        <p class="card-text small text-white-50 flex-grow-1">
+                            @(movie.ReleaseDate?.Year.ToString() ?? "Bilinmiyor")
+                            <span class="float-end">⭐ @movie.VoteAverage.ToString("F1")</span>
+                        </p>
+                        <a asp-controller="Movies" asp-action="Details" asp-route-id="@movie.Id" class="btn btn-sm btn-info mt-auto">Detayları Gör</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-warning mt-5" role="alert">
+        <h4 class="alert-heading">Sonuç Yok!</h4>
+        <p>Aradığınız **'@query'** terimiyle eşleşen film bulunamadı. Lütfen arama teriminizi kontrol edin veya farklı bir kelime deneyin.</p>
+    </div>
+}

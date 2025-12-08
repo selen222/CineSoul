@@ -1,0 +1,32 @@
+﻿@model IEnumerable<CineSoul.Models.UserList>
+
+@{
+    ViewData["Title"] = "Listelerim";
+}
+
+<h2 class="text-white mt-4">Kullanıcı Listelerim</h2>
+<p class="text-secondary">
+    <a asp-action="Create" class="btn btn-outline-primary"><i class="fas fa-plus-circle me-1"></i> Yeni Liste Oluştur</a>
+</p>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card bg-secondary text-white shadow-lg">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">@Html.DisplayFor(modelItem => item.Name)</h5>
+                    <h6 class="card-subtitle mb-2 text-white-50">@item.MovieIds.Count Film</h6>
+                    <p class="card-text text-truncate">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-2">İçeriği Gör</a>
+
+                    @* Silme butonu için küçük bir form *@
+                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu listeyi silmek istediğinizden emin misiniz?');">Sil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

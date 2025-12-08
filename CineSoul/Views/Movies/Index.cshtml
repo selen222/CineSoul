@@ -1,0 +1,35 @@
+﻿@* Model tanımını yapmaya gerek yok, çünkü ViewBag kullanıyoruz *@
+@{
+    ViewData["Title"] = "Sinema Ruhu";
+    // ViewBag'deki verileri kolay kullanmak için değişkenlere atayalım:
+    var trendingMovies = ViewBag.Trending as IEnumerable<CineSoul.Models.Movie>;
+    var popularMovies = ViewBag.Popular as IEnumerable<CineSoul.Models.Movie>;
+    var nowPlayingMovies = ViewBag.NowPlaying as IEnumerable<CineSoul.Models.Movie>;
+}
+
+<div class="container-fluid py-5 bg-dark text-white">
+
+    <header class="text-center mb-5">
+        <h1>CineSoul: Keşfetmeye Başla</h1>
+        <p class="lead">Günün Trendleri, Yeni Çıkanlar ve Popüler Filmler</p>
+    </header>
+
+    @if (trendingMovies != null && trendingMovies.Any())
+    {
+        <h2 class="mb-3 mt-4">🔥 Günün Trendleri</h2>
+        @Html.Partial("_MovieCarousel", trendingMovies, new ViewDataDictionary(ViewData) { { "CarouselId", "trending" } })
+    }
+
+    @if (popularMovies != null && popularMovies.Any())
+    {
+        <h2 class="mb-3 mt-4">✨ Tüm Zamanların Popülerleri</h2>
+        @Html.Partial("_MovieCarousel", popularMovies, new ViewDataDictionary(ViewData) { { "CarouselId", "popular" } })
+    }
+
+    @if (nowPlayingMovies != null && nowPlayingMovies.Any())
+    {
+        <h2 class="mb-3 mt-4">🎬 Yeni Vizyona Girenler</h2>
+        @Html.Partial("_MovieCarousel", nowPlayingMovies, new ViewDataDictionary(ViewData) { { "CarouselId", "new" } })
+    }
+
+</div>
