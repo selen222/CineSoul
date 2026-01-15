@@ -15,7 +15,6 @@ namespace CineSoul.Models
 
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 
-        // Kullanıcının eklediği filmleri saklamak için JSON veya TMDB ID listesi şeklinde tutabiliriz
         public ICollection<UserList> Lists { get; set; } = new List<UserList>();
     }
 }

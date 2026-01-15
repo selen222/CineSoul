@@ -10,7 +10,6 @@
             <div class="card-header bg-dark text-white text-center">
                 <h3 class="font-weight-light my-4"><i class="fas fa-plus-square me-2"></i> Yeni Liste Oluştur</h3>
             </div>
-            <div class="card-body">
 
                 <form asp-action="Create" method="post">
 
@@ -45,7 +44,6 @@
 
 @section Scripts {
     @{
-        // İstemci tarafı (client-side) doğrulama için
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }

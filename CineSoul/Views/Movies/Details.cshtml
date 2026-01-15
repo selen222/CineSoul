@@ -1,6 +1,5 @@
 ﻿@model CineSoul.ApiModels.TmdbDto
 
-@* 1. RAZOR SERVİSLERİNİ VE MODELLERİ TANIMLA *@
 @using Microsoft.AspNetCore.Identity
 @using CineSoul.Models
 @inject SignInManager<AppUser> SignInManager
@@ -12,17 +11,11 @@
     var trailerKey = Model.Videos?.Results?.FirstOrDefault(v => v.Site == "YouTube" && v.Type == "Trailer")?.Key;
     var trailerUrl = !string.IsNullOrEmpty(trailerKey) ? $"https://www.youtube.com/embed/{trailerKey}" : null;
 
-    var directorName = Model.Credits?.Crew?.FirstOrDefault(c => c.Job == "Director")?.Name;
-    var castNames = Model.Credits?.Cast?.Take(5).Select(c => c.Name);
-
-    // ViewBag'den listeleri çekiyoruz
-    var userLists = ViewBag.UserLists as List<UserList> ?? new List<UserList>();
 
     var tmdbMovieId = Model.Id;
 }
 
 <style>
-    /* Arka plan resminin daha iyi görünmesi için basit bir stil */
     .movie-header {
         position: relative;
         min-height: 70vh;
@@ -35,7 +28,6 @@
         left: 0;
         right: 0;
         bottom: 0;
-        /* Koyu degrade ekleyerek yazıların okunmasını kolaylaştırır */
         background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0.9) 100%);
         z-index: 1;
     }
@@ -44,7 +36,6 @@
         position: relative;
         z-index: 2;
     }
-</style>
 
 <div class="container-fluid text-white movie-header"
      style="background-image: url('https://image.tmdb.org/t/p/original@Model.Backdrop_Path');
@@ -54,7 +45,6 @@
 
     <div class="container detail-content py-5">
         <div class="row align-items-start">
-
             <div class="col-md-4 col-lg-3 text-center mb-4">
                 <img src="https://image.tmdb.org/t/p/w500@Model.Poster_Path"
                      class="img-fluid rounded shadow-lg border border-secondary"
@@ -87,7 +77,6 @@
                                     var optionText = $"{list.Name} ({(isAdded ? "Eklendi" : "Ekle")})";
                                     <option value="@list.Id" data-is-added="@isAdded.ToString().ToLower()">@optionText</option>
                                 }
-                            }
                             else
                             {
                                 <option disabled>Liste bulunamadı. Yeni bir liste oluşturun!</option>
@@ -98,7 +87,6 @@
                         <button id="toggleButton" class="btn btn-outline-primary w-100" disabled>
                             <i class="fas fa-plus-circle me-2"></i> Listeye Ekle
                         </button>
-                    </div> @* HATA DÜZELTME: Bu div'in kapanış etiketi eksikti *@
                 }
                 else
                 {
@@ -107,7 +95,6 @@
                         <i class="fas fa-user-lock me-2"></i> Giriş Yap & Listeye Ekle
                     </a>
                 }
-                @* LİSTE EKLEME/ÇIKARMA ALANININ SONU *@
             </div>
 
             <div class="col-md-8 col-lg-9 pt-md-5">
@@ -129,7 +116,6 @@
 
                 <div class="mt-4">
                     <p class="mb-1"><strong>Yönetmen:</strong> <span class="text-info">@(directorName ?? "Bilinmiyor")</span></p>
-                    <p class="mb-1"><strong>Oyuncular:</strong> <span class="text-info">@(castNames != null && castNames.Any() ? string.Join(", ", castNames) : "Bilinmiyor")</span></p>
                 </div>
             </div>
         </div>
@@ -181,9 +167,6 @@
                 return;
             }
 
-            const originalText = element.innerHTML;
-            element.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> İşleniyor...';
-            element.disabled = true;
 
             const token = $('input[name="__RequestVerificationToken"]').val();
 
@@ -195,18 +178,9 @@
                 },
                 body: JSON.stringify({ listId: parseInt(listId), tmdbMovieId: parseInt(tmdbMovieId) })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Sunucu hatası veya yetkilendirme sorunu (" + response.status + ")");
-                }
-                return response.json();
             })
             .then(data => {
-                const listSelector = document.getElementById('listSelector');
-                const selectedOption = listSelector.options[listSelector.selectedIndex];
-
                 if (data.success) {
-                    // Seçenek ve buton durumunu güncelle
                     if (data.added) {
                         selectedOption.setAttribute('data-is-added', 'true');
                         selectedOption.text = selectedOption.text.replace('(Ekle)', '(Eklendi)');
@@ -214,10 +188,6 @@
                         selectedOption.setAttribute('data-is-added', 'false');
                         selectedOption.text = selectedOption.text.replace('(Eklendi)', '(Ekle)');
                     }
-
-                    // Dinamik buton durumunu güncelle
-                    updateToggleButton(data.added);
-                    alert(data.message);
                 } else {
                     alert("İşlem başarısız: " + data.message);
                 }

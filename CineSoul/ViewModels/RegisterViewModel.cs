@@ -20,7 +20,6 @@ namespace CineSoul.ViewModels
         [Compare("Password", ErrorMessage = "Şifreler eşleşmiyor.")]
         public string ConfirmPassword { get; set; }
 
-        // Hata veren FullName yerine AppUser'daki DisplayName kullanılıyor
         [Required(ErrorMessage = "Görünen ad gereklidir.")]
         [Display(Name = "Görünen Ad")]
         [MaxLength(150, ErrorMessage = "Görünen ad 150 karakterden uzun olamaz.")]

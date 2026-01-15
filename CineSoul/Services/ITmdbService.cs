@@ -25,7 +25,6 @@ namespace CineSoul.Services
         // Hata veren metot: Bir filmin tüm detaylarını (oyuncu, yönetmen vb.) çeker
         Task<Movie> GetFullMovieDetailsAsync(int id); // <-- BU SATIR EKLENMELİ/DÜZELTİLMELİ!
 
-        // Eğer detay sayfası karmaşık DTO bekliyorsa bu da gereklidir
         Task<TmdbDto> GetMovieDetailDtoAsync(int id);
 
         // Arama metodu (varsayılan olarak eklenmeli)

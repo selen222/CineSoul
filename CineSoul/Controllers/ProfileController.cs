@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 namespace CineSoul.Controllers
 {
-    // Sadece giriş yapmış kullanıcılar erişebilir
     [Authorize]
     public class ProfileController : Controller
     {

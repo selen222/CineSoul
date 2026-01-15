@@ -13,8 +13,6 @@
             <div class="card-body">
 
                 <form asp-controller="Account" asp-action="Login" method="post">
-
-                    @* Gizli ReturnUrl alanı *@
                     <input type="hidden" asp-for="ReturnUrl" />
 
                     @* Genel Doğrulama Hataları *@
@@ -47,13 +45,7 @@
                 </form>
 
             </div>
-            <div class="card-footer text-center py-3">
-                <div class="small">
-                    Hesabınız yok mu? <a asp-controller="Account" asp-action="Register">Hemen Kayıt Ol</a>
                 </div>
-                @* <div class="small mt-2">
-                    <a href="#">Şifremi Unuttum</a>
-                </div> *@
             </div>
         </div>
     </div>
@@ -61,7 +53,6 @@
 
 @section Scripts {
     @{
-        // İstemci tarafı (client-side) doğrulama için gereklidir.
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }

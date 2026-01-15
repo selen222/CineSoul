@@ -13,7 +13,6 @@
             <div class="card-body">
 
                 <form asp-controller="Account" asp-action="Register" method="post">
-
                     @* Genel Doğrulama Hataları *@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -45,12 +44,10 @@
                         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
 
-                    @* Kayıt Ol Butonu *@
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg mt-3">Kayıt Ol</button>
                     </div>
                 </form>
-
             </div>
             <div class="card-footer text-center py-3">
                 <div class="small">
@@ -63,7 +60,6 @@
 
 @section Scripts {
     @{
-        // İstemci tarafı (client-side) doğrulama için gereklidir.
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }

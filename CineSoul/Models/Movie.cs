@@ -53,15 +53,7 @@ namespace CineSoul.Models
 
         [JsonPropertyName("video")]
         public bool Video { get; set; }
-
-        // ==========================================================
-        // PROJE İSTERLERİ İÇİN EKLEDİĞİMİZ YENİ ALANLAR
-        // ==========================================================
-
-        // 1. Youtube Trailer Linki (Popup için)
         public string TrailerUrl { get; set; }
-
-        // 2. Yönetmen ve Oyuncular (Detay sayfası için)
         public string Director { get; set; }
         public string Cast { get; set; } // Örn: "Brad Pitt, Edward Norton"
 
@@ -69,10 +61,6 @@ namespace CineSoul.Models
         // Veritabanına kaydederken bunları biz işaretleyeceğiz.
         public bool IsTrending { get; set; }
         public bool IsNewRelease { get; set; }
-
-        // ==========================================================
-        // YARDIMCI PROPERTY'LER (Database'e kaydedilmez, UI içindir)
-        // ==========================================================
 
         [JsonIgnore]
         public string FullPosterUrl =>

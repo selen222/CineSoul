@@ -79,9 +79,6 @@ namespace CineSoul.ApiModels
         [JsonPropertyName("vote_count")]
         public int Vote_Count { get; set; }
 
-        // ====================================================================
-        // RAZOR VIEW HATALARINI DÜZELTEN YENİ EKLENEN ÖZELLİKLER (append_to_response)
-        // ====================================================================
 
         [JsonPropertyName("videos")]
         public TmdbVideos Videos { get; set; } // Hata 1 düzeltildi
@@ -138,9 +135,6 @@ namespace CineSoul.ApiModels
     // =======================
     public class TmdbCredits
     {
-        // TMDB Credits objesinin ana ID'si film ID'si ile aynıdır.
-        // [JsonPropertyName("id")] 
-        // public int Id { get; set; }
 
         [JsonPropertyName("cast")]
         public List<TmdbCast> Cast { get; set; } // Not: Razor'da küçük 'cast' kullanılmıştı. Modelde büyük 'Cast' kullanıldı.

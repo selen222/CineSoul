@@ -1,7 +1,5 @@
-﻿@* Bu Partial View, film listesini (IEnumerable<Movie>) model olarak alır *@
 @model IEnumerable<CineSoul.Models.Movie>
 @{
-    // ViewData'dan Karusel ID'sini alıyoruz (Örn: "trending" veya "popular")
     string carouselId = ViewData["CarouselId"]?.ToString() ?? "default";
 }
 
@@ -12,8 +10,6 @@
             <div class="card bg-dark text-white border-0 h-100 position-relative">
 
                 <a href="@Url.Action("Details", "Movies", new { id = movie.Id })">
-
-                    @* ✅ POSTER URL DÜZELTİLDİ: FullPosterUrl özelliği kullanılıyor *@
                     <img src="@movie.FullPosterUrl"
                          class="card-img-top rounded"
                          alt="@movie.Title"

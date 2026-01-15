@@ -19,7 +19,6 @@ namespace CineSoul.Controllers
         // ==========================================
         // 1. KAYIT İŞLEMLERİ (REGISTER)
         // ==========================================
-
         [HttpGet]
         public IActionResult Register()
         {
@@ -31,7 +30,6 @@ namespace CineSoul.Controllers
         {
             if (ModelState.IsValid)
             {
-                // DÜZELTME: FullName yerine DisplayName kullanıldı
                 var user = new AppUser
                 {
                     UserName = model.Email,
@@ -40,12 +38,10 @@ namespace CineSoul.Controllers
                     // JoinedAt, modelde otomatik ayarlandığı için burada eklemeye gerek yok.
                 };
 
-                // Yeni kullanıcı oluşturma
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
-                    // Başarılıysa, kullanıcıyı hemen giriş yapmaya zorla
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
@@ -61,7 +57,6 @@ namespace CineSoul.Controllers
         // ==========================================
         // 2. GİRİŞ İŞLEMLERİ (LOGIN)
         // ==========================================
-
         [HttpGet]
         public IActionResult Login(string returnUrl = null)
         {
@@ -96,7 +91,6 @@ namespace CineSoul.Controllers
         // ==========================================
         // 3. ÇIKIŞ İŞLEMLERİ (LOGOUT)
         // ==========================================
-
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
