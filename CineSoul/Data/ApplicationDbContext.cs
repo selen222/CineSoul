@@ -14,29 +14,31 @@ namespace CineSoul.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<UserList> UserLists { get; set; }
+        public DbSet<UserListItem> UserListItems { get; set; } // Yeni Tablomuz!
+        public DbSet<WatchHistory> WatchHistories { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // --- UserList için Value Converter Tanımlaması ---
+            // UserList ve UserListItem arasındaki Bire-Çok ilişki
+            builder.Entity<UserListItem>()
+                .HasOne(ui => ui.UserList)
+                .WithMany(l => l.Items)
+                .HasForeignKey(ui => ui.UserListId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            var listConverter = new ValueConverter<List<int>, string>(
-                // Kayıt (Write): Listeyi JSON'a dönüştür
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                // Okuma (Read): JSON'dan Listeye dönüştür
-                v => JsonSerializer.Deserialize<List<int>>(v, (JsonSerializerOptions)null)
-            );
+            builder.Entity<WatchHistory>()
+                .HasOne(w => w.User)
+                .WithMany()
+                .HasForeignKey(w => w.UserId);
 
             builder.Entity<UserList>()
-                .Property(l => l.MovieIds)
-                .HasConversion(listConverter, listComparer);
-
-            builder.Entity<UserList>()
-                .HasOne(l => l.Owner) // Bir liste bir sahibe sahiptir
-                .WithMany(u => u.Lists) // Bir sahibin birden çok listesi vardır
-                .HasForeignKey(l => l.OwnerId) // OwnerId yabancı anahtardır
-                .OnDelete(DeleteBehavior.Cascade); // Kullanıcı silinirse, listeler de silinsin
+                .HasOne(l => l.Owner)
+                .WithMany(u => u.Lists)
+                .HasForeignKey(l => l.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

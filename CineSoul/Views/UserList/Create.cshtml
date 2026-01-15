@@ -4,39 +4,52 @@
     ViewData["Title"] = "Yeni Film Listesi Oluştur";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6 col-lg-7">
-        <div class="card bg-secondary text-white shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-dark text-white text-center">
-                <h3 class="font-weight-light my-4"><i class="fas fa-plus-square me-2"></i> Yeni Liste Oluştur</h3>
-            </div>
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card bg-dark text-white shadow-lg border border-secondary rounded-4">
+                <div class="card-header bg-transparent border-secondary text-center py-4">
+                    <h3 class="fw-bold mb-0 text-danger">
+                        <i class="fas fa-plus-circle me-2"></i>Yeni Liste
+                    </h3>
+                    <p class="text-muted small mb-0 mt-2">Kendi film koleksiyonunu oluşturmaya başla.</p>
+                </div>
 
-                <form asp-action="Create" method="post">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-                    @* Genel Doğrulama Hataları *@
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        @* Liste Adı *@
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label text-light fw-bold small">LİSTE ADI</label>
+                            <input asp-for="Name" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2"
+                                   placeholder="Örn: Favori Bilim Kurgu Filmlerim" required />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
 
-                    @* Liste Adı Alanı *@
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label"></label>
-                        <input asp-for="Name" class="form-control" placeholder="Örn: 2024 En İyileri" />
-                        <span asp-validation-for="Name" class="text-danger small"></span>
-                    </div>
+                        @* Açıklama *@
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label text-light fw-bold small">AÇIKLAMA (OPSİYONEL)</label>
+                            <textarea asp-for="Description" class="form-control bg-secondary bg-opacity-10 border-secondary text-white"
+                                      rows="3" placeholder="Bu liste ne hakkında?"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
 
-                    @* Açıklama Alanı *@
-                    <div class="mb-3">
-                        <label asp-for="Description" class="form-label"></label>
-                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Bu liste hakkında kısa bir açıklama..."></textarea>
-                        <span asp-validation-for="Description" class="text-danger small"></span>
-                    </div>
+                        
+                        <input type="hidden" name="MovieIds" value="" />
 
-                    @* Butonlar *@
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-1"></i> Listeyi Kaydet</button>
-                        <a asp-action="Index" class="btn btn-outline-light mt-2">Listelerime Geri Dön</a>
-                    </div>
-                </form>
-
+                        @* Butonlar *@
+                        <div class="d-grid gap-3 mt-5">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold rounded-3 shadow">
+                                <i class="fas fa-save me-2"></i>Listeyi Kaydet
+                            </button>
+                            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-secondary btn-sm border-0 text-muted">
+                                Vazgeç ve Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -47,3 +60,18 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
+
+<style>
+    /* Input odaklandığında kırmızı vurgu */
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: #e50914;
+        box-shadow: 0 0 0 0.25rem rgba(229, 9, 20, 0.25);
+        color: white;
+    }
+
+    .form-control::placeholder {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>

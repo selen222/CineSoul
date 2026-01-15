@@ -10,7 +10,7 @@ namespace CineSoul.Models
         [JsonPropertyName("id")]
         public int Id { get; set; }
 
-        [Required] // Bu alanın boş geçilemeyeceğini belirtir
+        [Required]
         [JsonPropertyName("name")]
         public string Name { get; set; }
     }

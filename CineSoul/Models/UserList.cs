@@ -1,9 +1,16 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CineSoul.Models
 {
     public enum ListType
+    {
+        Custom = 0,
+        Watchlist = 1,
+        Favorites = 2
+    }
+
+    public class UserList
     {
         [Key]
         public int Id { get; set; }
@@ -18,9 +25,9 @@ namespace CineSoul.Models
 
         [Required]
         public string OwnerId { get; set; }
-        public AppUser Owner { get; set; } // Navigasyon Property
+        public AppUser Owner { get; set; }
 
-        // TMDB film ID'lerini tutar (JSON olarak saklanacak)
-        public List<int> MovieIds { get; set; } = new List<int>();
+        // YENİ: Artık filmleri List<int> olarak değil, UserListItem koleksiyonu olarak tutuyoruz.
+        public virtual ICollection<UserListItem> Items { get; set; } = new List<UserListItem>();
     }
 }

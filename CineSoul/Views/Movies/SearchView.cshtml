@@ -1,0 +1,38 @@
+﻿@model IEnumerable<CineSoul.Models.Movie>
+
+@{
+    ViewData["Title"] = "Arama Sonuçları";
+}
+
+<div class="container mt-4">
+    <h2 class="text-danger mb-4">"@ViewBag.SearchQuery" için Arama Sonuçları</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+            Üzgünüz, aradığınız kriterlere uygun bir film bulunamadı.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            @foreach (var movie in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 bg-secondary text-white border-0 shadow">
+                        <img src="@movie.FullPosterUrl" class="card-img-top" alt="@movie.Title">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">@movie.Title</h5>
+                            <p class="card-text small text-light">
+                                <i class="fas fa-star text-warning"></i> @movie.VoteAverage / 10 | @movie.Year
+                            </p>
+                            <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-danger btn-sm w-100">
+                                Detaylar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

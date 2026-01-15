@@ -1,13 +1,13 @@
-@model IEnumerable<CineSoul.Models.Movie>
+﻿@model IEnumerable<CineSoul.Models.Movie>
 @{
     string carouselId = ViewData["CarouselId"]?.ToString() ?? "default";
 }
 
-<div class="d-flex overflow-auto p-2" style="gap: 15px;">
+<div class="d-flex overflow-auto p-2 movie-carousel-container" style="gap: 15px;">
     @foreach (var movie in Model)
     {
         <div class="flex-shrink-0" style="width: 180px;">
-            <div class="card bg-dark text-white border-0 h-100 position-relative">
+            <div class="card bg-dark text-white border-0 h-100 position-relative movie-card">
 
                 <a href="@Url.Action("Details", "Movies", new { id = movie.Id })">
                     <img src="@movie.FullPosterUrl"
@@ -16,17 +16,25 @@
                          style="height: 270px; object-fit: cover; border: 1px solid #444;">
                 </a>
 
+                @* Overlay *@
                 <div class="overlay position-absolute w-100 h-100 d-flex flex-column justify-content-center align-items-center rounded"
-                     style="top: 0; left: 0; background: rgba(0, 0, 0, 0.7); opacity: 0; transition: opacity 0.2s; pointer-events: none;">
+                     style="top: 0; left: 0; background: rgba(0, 0, 0, 0.7); opacity: 0; transition: opacity 0.2s;">
 
                     <h6 class="text-center mb-2 px-1 text-truncate" style="max-width: 90%;">@movie.Title</h6>
                     <small class="text-warning">@movie.VoteAverage ⭐</small>
 
-                    <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-danger btn-sm mt-2">
+                    <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-danger btn-sm mt-2 px-3 rounded-pill">
                         ▶️ İzle
                     </a>
 
-                    <button class="btn btn-outline-light btn-sm mt-1">+ Listem</button>
+                    @* HIZLI EKLEME BUTONU (AJAX DESTEKLİ) *@
+                    <div class="mt-1 w-75 px-2">
+                        <button type="button"
+                                class="btn btn-outline-light btn-sm w-100 rounded-pill quick-add-btn"
+                                data-movie-id="@movie.Id">
+                            <i class="fas fa-plus small"></i> + Listem
+                        </button>
+                    </div>
                 </div>
 
                 <div class="card-body p-1 text-center">
@@ -35,14 +43,54 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            // Basit Hover Efekti (Gerçek projede CSS daha iyidir)
-            document.querySelectorAll('.card').forEach(card => {
-                const overlay = card.querySelector('.overlay');
-                card.addEventListener('mouseenter', () => overlay.style.opacity = '1');
-                card.addEventListener('mouseleave', () => overlay.style.opacity = '0');
-            });
-        </script>
     }
 </div>
+
+@* AJAX Scriptini bir kez ekliyoruz *@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // "quick-add-btn" sınıfına sahip butonlara tıklandığında çalışır
+        $(document).off('click', '.quick-add-btn').on('click', '.quick-add-btn', function (e) {
+            e.preventDefault();
+            var btn = $(this);
+            var movieId = btn.data('movie-id');
+
+            // Görsel geri bildirim
+            var originalContent = btn.html();
+            btn.html('<span class="spinner-border spinner-border-sm"></span>...').prop('disabled', true);
+
+            $.post('/Movies/AddToList', { movieId: movieId }, function (response) {
+                // Başarılı olduğunda butonun rengini ve metnini değiştir
+                btn.removeClass('btn-outline-light').addClass('btn-success')
+                   .html('<i class="fas fa-check small"></i> Eklendi')
+                   .prop('disabled', false);
+
+                // 2 saniye sonra eski haline döndürebilirsin veya öyle kalabilir
+            }).fail(function () {
+                alert("Film eklenirken bir hata oluştu veya giriş yapmanız gerekiyor.");
+                btn.html(originalContent).prop('disabled', false);
+            });
+        });
+    });
+</script>
+
+<style>
+    .movie-card:hover .overlay {
+        opacity: 1 !important;
+    }
+
+    .movie-carousel-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .movie-carousel-container::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 10px;
+    }
+
+    /* Overlay içindeki butonların hover etkisini bozmamak için */
+    .overlay .btn {
+        pointer-events: auto;
+    }
+</style>

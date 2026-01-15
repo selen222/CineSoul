@@ -2,9 +2,11 @@
 using CineSoul.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CineSoul.Controllers
 {
+    [Route("[controller]/[action]")]
     public class AccountController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -22,20 +24,22 @@ namespace CineSoul.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            if (User.Identity!.IsAuthenticated) return RedirectToAction("Index", "Home");
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register([FromForm] RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var user = new AppUser
                 {
-                    UserName = model.Email,
+                    UserName = model.Email, // E-postayı kullanıcı adı olarak set ediyoruz
                     Email = model.Email,
-                    DisplayName = model.DisplayName // <-- Burası düzeltildi
-                    // JoinedAt, modelde otomatik ayarlandığı için burada eklemeye gerek yok.
+                    DisplayName = model.DisplayName,
+                    JoinedAt = DateTime.Now // Daha önce eklediğimiz katılma tarihi
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -60,30 +64,39 @@ namespace CineSoul.Controllers
         [HttpGet]
         public IActionResult Login(string returnUrl = null)
         {
+            if (User.Identity!.IsAuthenticated) return RedirectToAction("Index", "Home");
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login([FromForm] LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(
-                    model.Email,
-                    model.Password,
-                    model.RememberMe,
-                    lockoutOnFailure: false);
+                // Önemli: E-posta ile kullanıcıyı buluyoruz
+                var user = await _userManager.FindByEmailAsync(model.Email);
 
-                if (result.Succeeded)
+                if (user != null)
                 {
-                    if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                    // Kullanıcı bulunduysa UserName üzerinden şifre kontrolü yapıyoruz
+                    var result = await _signInManager.PasswordSignInAsync(
+                        user.UserName,
+                        model.Password,
+                        model.RememberMe,
+                        lockoutOnFailure: false);
+
+                    if (result.Succeeded)
                     {
-                        return Redirect(model.ReturnUrl);
+                        if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                        {
+                            return Redirect(model.ReturnUrl);
+                        }
+                        return RedirectToAction("Index", "Home");
                     }
-                    return RedirectToAction("Index", "Home");
                 }
 
-                ModelState.AddModelError(string.Empty, "Geçersiz giriş denemesi.");
+                ModelState.AddModelError(string.Empty, "E-posta veya şifre hatalı.");
             }
             return View(model);
         }
@@ -92,6 +105,7 @@ namespace CineSoul.Controllers
         // 3. ÇIKIŞ İŞLEMLERİ (LOGOUT)
         // ==========================================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

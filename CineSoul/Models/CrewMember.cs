@@ -1,5 +1,4 @@
-﻿// Models/CrewMember.cs
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace CineSoul.Models
 {
@@ -11,6 +10,6 @@ namespace CineSoul.Models
         [JsonPropertyName("job")]
         public string Job { get; set; }
 
-        // Yönetmen (Director) veya Senarist (Writer) gibi rolleri filtrelemek için kullanılır.
+        
     }
 }

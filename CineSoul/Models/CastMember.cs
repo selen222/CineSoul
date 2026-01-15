@@ -1,4 +1,4 @@
-﻿// Models/CastMember.cs
+﻿
 using System.Text.Json.Serialization;
 
 namespace CineSoul.Models
@@ -11,6 +11,6 @@ namespace CineSoul.Models
         [JsonPropertyName("character")]
         public string Character { get; set; }
 
-        // Sadece ilk 5-10 oyuncuyu göstermek için yeterli olacaktır.
+        
     }
 }

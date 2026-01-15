@@ -1,21 +1,136 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CineSoul.Data;
+using CineSoul.Models;
+using CineSoul.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CineSoul.Controllers
 {
     [Authorize]
+    [Route("[controller]/[action]")]
     public class ProfileController : Controller
     {
-        // Profilim sayfasının ana giriş noktası
-        // Buraya listeleri, kullanıcı bilgilerini vb. çekmek için mantık ekleyebilirsiniz.
-        public IActionResult Index()
-        {
-            ViewData["Title"] = "Kullanıcı Profili";
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-            // Eğer Views/Profile/Index.cshtml dosyanız yoksa,
-            // bu projeyi çalıştırmadan önce onu oluşturmanız gerekir.
-            return View();
+        public ProfileController(ApplicationDbContext context, UserManager<AppUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Challenge();
+
+            // 1. Son İncelediklerim (WatchHistory) verilerini çekiyoruz
+            var recentMovies = await _context.WatchHistories
+                .Include(h => h.Movie)
+                .Where(h => h.UserId == userId)
+                .OrderByDescending(h => h.WatchedAt)
+                .Take(5)
+                .Select(h => h.Movie)
+                .ToListAsync();
+
+            // 2. İzleme Listesi ID'lerini çekiyoruz
+            var watchlistIds = await _context.UserListItems
+                .Where(li => li.UserList.OwnerId == userId)
+                .Select(li => li.MovieId)
+                .ToListAsync();
+
+            // 3. ViewModel doldurma (Referans hatasını önlemek için tam ad kullanıldı)
+            var profileViewModel = new CineSoul.ViewModels.ProfileViewModel
+            {
+                RecentMovies = recentMovies,
+                Watchlist = watchlistIds
+            };
+
+            // 4. Profil sayfasında asıl dönecek olan UserList objesi
+            var userList = await _context.UserLists
+                .Include(l => l.Items)
+                .FirstOrDefaultAsync(l => l.OwnerId == userId && l.Type == ListType.Watchlist);
+
+            if (userList == null)
+            {
+                userList = new UserList { Items = new List<UserListItem>() };
+            }
+
+            // 5. Puanlamaları çek ve ViewBag'e koy
+            ViewBag.UserRatings = await _context.Ratings
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.RatedAt)
+                .ToListAsync();
+
+            // 6. ViewModel'i View'da kullanabilmek için ViewData'ya aktar
+            ViewData["ProfileInfo"] = profileViewModel;
+
+            return View(userList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveFromList(int movieId)
+        {
+            var userId = _userManager.GetUserId(User);
+            var itemToRemove = await _context.UserListItems
+                .Include(i => i.UserList)
+                .FirstOrDefaultAsync(i => i.MovieId == movieId && i.UserList.OwnerId == userId);
+
+            if (itemToRemove != null)
+            {
+                _context.UserListItems.Remove(itemToRemove);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var model = new EditProfileViewModel
+            {
+                DisplayName = user.DisplayName,
+                ExistingPicturePath = user.ProfilePicturePath
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditProfileViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                user.DisplayName = model.DisplayName;
+                if (model.ProfilePictureFile != null)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.ProfilePictureFile.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create)) { await model.ProfilePictureFile.CopyToAsync(fileStream); }
+                    user.ProfilePicturePath = "/uploads/profiles/" + uniqueFileName;
+                }
+                await _userManager.UpdateAsync(user);
+                return RedirectToAction(nameof(Index));
+            }
+            model.ExistingPicturePath = user.ProfilePicturePath;
+            return View(model);
         }
     }
 }

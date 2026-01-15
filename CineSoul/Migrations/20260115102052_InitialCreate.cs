@@ -31,7 +31,7 @@ namespace CineSoul.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DisplayName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    ProfilePictureUrl = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    ProfilePicturePath = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -70,8 +70,7 @@ namespace CineSoul.Migrations
                 name: "Movies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OriginalTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Overview = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -82,11 +81,14 @@ namespace CineSoul.Migrations
                     BackdropPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OriginalLanguage = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Popularity = table.Column<double>(type: "float", nullable: false),
+                    Tagline = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Runtime = table.Column<int>(type: "int", nullable: true),
                     Adult = table.Column<bool>(type: "bit", nullable: false),
                     Video = table.Column<bool>(type: "bit", nullable: false),
                     TrailerUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Director = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Cast = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Screenwriter = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsTrending = table.Column<bool>(type: "bit", nullable: false),
                     IsNewRelease = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -202,23 +204,92 @@ namespace CineSoul.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserList",
+                name: "Ratings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Value = table.Column<int>(type: "int", nullable: false),
+                    RatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MovieId = table.Column<int>(type: "int", nullable: false),
+                    MovieTitle = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ratings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ratings_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserLists",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    MovieIds = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserList", x => x.Id);
+                    table.PrimaryKey("PK_UserLists", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserList_AspNetUsers_OwnerId",
+                        name: "FK_UserLists_AspNetUsers_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WatchHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MovieId = table.Column<int>(type: "int", nullable: false),
+                    MovieTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PosterPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WatchedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WatchHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WatchHistories_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserListItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserListId = table.Column<int>(type: "int", nullable: false),
+                    MovieId = table.Column<int>(type: "int", nullable: false),
+                    MovieTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PosterPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AddedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserListItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserListItems_UserLists_UserListId",
+                        column: x => x.UserListId,
+                        principalTable: "UserLists",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -263,9 +334,24 @@ namespace CineSoul.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserList_OwnerId",
-                table: "UserList",
+                name: "IX_Ratings_UserId",
+                table: "Ratings",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserListItems_UserListId",
+                table: "UserListItems",
+                column: "UserListId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserLists_OwnerId",
+                table: "UserLists",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WatchHistories_UserId",
+                table: "WatchHistories",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -293,10 +379,19 @@ namespace CineSoul.Migrations
                 name: "Movies");
 
             migrationBuilder.DropTable(
-                name: "UserList");
+                name: "Ratings");
+
+            migrationBuilder.DropTable(
+                name: "UserListItems");
+
+            migrationBuilder.DropTable(
+                name: "WatchHistories");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "UserLists");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

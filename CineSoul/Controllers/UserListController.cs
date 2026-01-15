@@ -1,100 +1,82 @@
+﻿using CineSoul.Data;
 using CineSoul.Models;
+using CineSoul.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CineSoul.Controllers
 {
-            var userId = _userManager.GetUserId(User);
+    [Authorize]
+    [Route("[controller]/[action]")]
+    public class UserListController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly ITmdbService _tmdbService;
 
-            var userLists = await _context.UserLists
-                                        .Where(l => l.OwnerId == userId)
-                                        .ToListAsync();
-
-            return View(userLists);
+        public UserListController(ApplicationDbContext context, UserManager<AppUser> userManager, ITmdbService tmdbService)
+        {
+            _context = context;
+            _userManager = userManager;
+            _tmdbService = tmdbService;
         }
 
-        // Tek bir listenin detaylarını (ve içindeki filmleri) gösterir
-        public async Task<IActionResult> Details(int id)
+        [HttpPost]
+        [Route("ToggleMovieJson")]
+        public async Task<IActionResult> ToggleMovieJson([FromBody] ToggleMovieRequest request)
         {
             var userId = _userManager.GetUserId(User);
+            if (userId == null) return Json(new { success = false, message = "Giriş yapmalısınız." });
 
             var userList = await _context.UserLists
-                                        .FirstOrDefaultAsync(l => l.Id == id && l.OwnerId == userId);
+                .Include(l => l.Items)
+                .FirstOrDefaultAsync(l => l.OwnerId == userId && (request.ListId == null ? l.Type == ListType.Watchlist : l.Id == request.ListId));
 
             if (userList == null)
             {
-                return NotFound();
+                userList = new UserList { Name = "İzleme Listem", OwnerId = userId, Type = ListType.Watchlist };
+                _context.UserLists.Add(userList);
+                await _context.SaveChangesAsync();
             }
 
-            var movies = new List<Movie>();
-            foreach (var tmdbId in userList.MovieIds)
+            var existingItem = userList.Items.FirstOrDefault(i => i.MovieId == request.TmdbMovieId);
+            bool added;
+
+            if (existingItem == null)
             {
-                var movie = await _tmdbService.GetFullMovieDetailsAsync(tmdbId);
-                if (movie != null)
+                var movieDetail = await _tmdbService.GetFullMovieDetailsAsync(request.TmdbMovieId);
+                var newItem = new UserListItem
                 {
-                    movies.Add(movie);
-                }
-
-            ViewBag.Movies = movies;
-            return View(userList);
-        }
-
-        // ==========================================
-        // LİSTE OLUŞTURMA (CREATE)
-        // ==========================================
-
-        [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description")] UserList userList)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(userList);
-                await _context.SaveChangesAsync();
-        }
-
-        // ==========================================
-        // LİSTEDEN FİLM EKLEME/ÇIKARMA
-        // ==========================================
-
-        // Bu metot, genellikle bir AJAX çağrısı ile bir film detay sayfasından tetiklenir
-        [HttpPost]
-        public async Task<IActionResult> ToggleMovie(int listId, int tmdbMovieId)
-        {
-            var userId = _userManager.GetUserId(User);
-
-            var userList = await _context.UserLists
-                                        .FirstOrDefaultAsync(l => l.Id == listId && l.OwnerId == userId);
-
-            if (userList == null)
-            {
-                return NotFound("Liste bulunamadı.");
-            }
-
-            if (userList.MovieIds.Contains(tmdbMovieId))
-            {
-                userList.MovieIds.Remove(tmdbMovieId);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, added = false, message = "Film listeden çıkarıldı." });
+                    UserListId = userList.Id,
+                    MovieId = request.TmdbMovieId,
+                    MovieTitle = movieDetail?.Title ?? "Bilinmeyen Film",
+                    PosterPath = movieDetail?.PosterPath,
+                    AddedAt = DateTime.Now
+                };
+                _context.UserListItems.Add(newItem);
+                added = true;
             }
             else
             {
-                userList.MovieIds.Add(tmdbMovieId);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, added = true, message = "Film listeye eklendi." });
+                _context.UserListItems.Remove(existingItem);
+                added = false;
             }
-        }
 
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, added = added });
         }
+    }
+
+    // Hata CS0246 Çözümü: Bu sınıfın burada olması gerekiyor
+    public class ToggleMovieRequest
+    {
+        public int TmdbMovieId { get; set; }
+        public int? ListId { get; set; }
     }
 }

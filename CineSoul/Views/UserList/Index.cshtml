@@ -1,32 +1,147 @@
 ﻿@model IEnumerable<CineSoul.Models.UserList>
+@inject CineSoul.Services.TmdbService TmdbService
 
 @{
     ViewData["Title"] = "Listelerim";
 }
 
-<h2 class="text-white mt-4">Kullanıcı Listelerim</h2>
-<p class="text-secondary">
-    <a asp-action="Create" class="btn btn-outline-primary"><i class="fas fa-plus-circle me-1"></i> Yeni Liste Oluştur</a>
-</p>
+<div class="container mt-5 pt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white"><i class="fas fa-layer-group text-primary me-2"></i> Kullanıcı Listelerim</h2>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus-circle me-1"></i> Yeni Liste Oluştur
+        </a>
+    </div>
 
-<div class="row">
-    @foreach (var item in Model)
+    @if (!Model.Any())
     {
-        <div class="col-md-4 mb-4">
-            <div class="card bg-secondary text-white shadow-lg">
-                <div class="card-body">
-                    <h5 class="card-title text-warning">@Html.DisplayFor(modelItem => item.Name)</h5>
-                    <h6 class="card-subtitle mb-2 text-white-50">@item.MovieIds.Count Film</h6>
-                    <p class="card-text text-truncate">@Html.DisplayFor(modelItem => item.Description)</p>
-
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-2">İçeriği Gör</a>
-
-                    @* Silme butonu için küçük bir form *@
-                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu listeyi silmek istediğinizden emin misiniz?');">Sil</button>
-                    </form>
-                </div>
-            </div>
+        <div class="alert alert-dark border-secondary text-center py-5">
+            <i class="fas fa-film fa-3x mb-3 text-secondary"></i>
+            <p class="text-white">Henüz bir listeniz bulunmuyor.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-info">Film Keşfetmeye Başla</a>
         </div>
     }
+    else
+    {
+        @foreach (var list in Model)
+        {
+            <div class="card bg-dark border-secondary mb-5 shadow-lg overflow-hidden">
+                <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <h4 class="mb-0 text-warning">@list.Name</h4>
+                        <small class="text-muted">@list.Description</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary">@list.Items.Count Film</span>
+                        <form asp-action="Delete" asp-route-id="@list.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Bu listeyi tamamen silmek istediğinizden emin misiniz?');">
+                                <i class="fas fa-trash"></i> Listeyi Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4">
+                        @{
+                            var movieIds = list.Items.Select(i => i.MovieId).ToList();
+                            var moviesInList = await TmdbService.GetMultipleMoviesAsync(movieIds);
+                        }
+
+                        @if (moviesInList.Any())
+                        {
+                            @foreach (var movie in moviesInList)
+                            {
+                                <div class="col movie-item" id="movie-card-@list.Id-@movie.Id">
+                                    <div class="card h-100 bg-transparent border-0 position-relative">
+                                        <a asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Id" class="text-decoration-none">
+                                            <div class="position-relative overflow-hidden rounded shadow-sm hover-container">
+                                                <img src="@movie.FullPosterUrl" class="card-img-top img-fluid rounded" alt="@movie.Title">
+                                                <div class="hover-overlay d-flex align-items-center justify-content-center">
+                                                    <span class="btn btn-sm btn-light rounded-pill fw-bold">Detaylar</span>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2 text-center">
+                                                <h6 class="text-white text-truncate mb-0 px-1" title="@movie.Title">@movie.Title</h6>
+                                                <small class="text-muted small">@movie.Year</small>
+                                            </div>
+                                        </a>
+                                        <button class="btn btn-sm btn-dark w-100 mt-2 opacity-75 hover-danger"
+                                                onclick="removeFromList(@list.Id, @movie.Id)">
+                                            <i class="fas fa-times me-1"></i> Çıkar
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 w-100 text-center py-4">
+                                <p class="text-muted small italic">Bu listeye henüz film eklenmemiş.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
 </div>
+
+<style>
+    .hover-container {
+        position: relative;
+        transition: transform 0.2s;
+    }
+
+        .hover-container:hover {
+            transform: scale(1.05);
+        }
+
+    .hover-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        opacity: 0;
+        transition: 0.3s;
+    }
+
+    .hover-container:hover .hover-overlay {
+        opacity: 1;
+    }
+
+    .hover-danger:hover {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function removeFromList(listId, movieId) {
+            if (!confirm("Bu filmi listeden çıkarmak istediğinize emin misiniz?")) return;
+
+            const cardId = `movie-card-${listId}-${movieId}`;
+            const element = document.getElementById(cardId);
+
+            fetch('/UserList/ToggleMovie', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listId: listId, tmdbMovieId: movieId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    
+                    element.style.opacity = '0';
+                    setTimeout(() => { element.remove(); }, 300);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Hata:', error));
+        }
+    </script>
+}

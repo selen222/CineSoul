@@ -1,9 +1,7 @@
-﻿// Services/ITmdbService.cs
-
-using CineSoul.Models;
+﻿using CineSoul.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CineSoul.ApiModels; // TmdbDto'yu kullanıyorsanız
+using CineSoul.ApiModels; 
 
 namespace CineSoul.Services
 {
@@ -22,12 +20,13 @@ namespace CineSoul.Services
         // DETAY ve LİSTE METOTLARI
         // ------------------------------------
 
-        // Hata veren metot: Bir filmin tüm detaylarını (oyuncu, yönetmen vb.) çeker
-        Task<Movie> GetFullMovieDetailsAsync(int id); // <-- BU SATIR EKLENMELİ/DÜZELTİLMELİ!
+       
+        Task<Movie> GetFullMovieDetailsAsync(int id);
 
+        
         Task<TmdbDto> GetMovieDetailDtoAsync(int id);
 
-        // Arama metodu (varsayılan olarak eklenmeli)
+        
         Task<List<Movie>> SearchMoviesAsync(string query);
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CineSoul.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251123133442_InitialCreate")]
+    [Migration("20260115102052_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -75,7 +75,7 @@ namespace CineSoul.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProfilePictureUrl")
+                    b.Property<string>("ProfilePicturePath")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -125,11 +125,8 @@ namespace CineSoul.Migrations
             modelBuilder.Entity("CineSoul.Models.Movie", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Adult")
                         .HasColumnType("bit")
@@ -183,6 +180,19 @@ namespace CineSoul.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "release_date");
 
+                    b.Property<int?>("Runtime")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "runtime");
+
+                    b.Property<string>("Screenwriter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Tagline")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "tagline");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -209,6 +219,38 @@ namespace CineSoul.Migrations
                     b.ToTable("Movies");
                 });
 
+            modelBuilder.Entity("CineSoul.Models.Rating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MovieTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Ratings");
+                });
+
             modelBuilder.Entity("CineSoul.Models.UserList", b =>
                 {
                     b.Property<int>("Id")
@@ -221,10 +263,6 @@ namespace CineSoul.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.PrimitiveCollection<string>("MovieIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -234,11 +272,79 @@ namespace CineSoul.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("UserList");
+                    b.ToTable("UserLists");
+                });
+
+            modelBuilder.Entity("CineSoul.Models.UserListItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MovieTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PosterPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserListId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserListId");
+
+                    b.ToTable("UserListItems");
+                });
+
+            modelBuilder.Entity("CineSoul.Models.WatchHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MovieTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PosterPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("WatchedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WatchHistories");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -374,6 +480,17 @@ namespace CineSoul.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CineSoul.Models.Rating", b =>
+                {
+                    b.HasOne("CineSoul.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CineSoul.Models.UserList", b =>
                 {
                     b.HasOne("CineSoul.Models.AppUser", "Owner")
@@ -383,6 +500,28 @@ namespace CineSoul.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("CineSoul.Models.UserListItem", b =>
+                {
+                    b.HasOne("CineSoul.Models.UserList", "UserList")
+                        .WithMany("Items")
+                        .HasForeignKey("UserListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserList");
+                });
+
+            modelBuilder.Entity("CineSoul.Models.WatchHistory", b =>
+                {
+                    b.HasOne("CineSoul.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -439,6 +578,11 @@ namespace CineSoul.Migrations
             modelBuilder.Entity("CineSoul.Models.AppUser", b =>
                 {
                     b.Navigation("Lists");
+                });
+
+            modelBuilder.Entity("CineSoul.Models.UserList", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

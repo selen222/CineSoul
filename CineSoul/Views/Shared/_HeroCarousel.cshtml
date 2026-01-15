@@ -1,4 +1,4 @@
-﻿@* Manşet Filmleri için özel Partial View *@
+﻿
 @model IEnumerable<CineSoul.Models.Movie>
 
 <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -7,11 +7,11 @@
         @{
             int index = 0;
         }
-        @foreach (var movie in Model.Take(5)) // İlk 5 filmi manşette gösterelim
+        @foreach (var movie in Model.Take(5))
         {
             <div class="carousel-item @(index == 0 ? "active" : "")">
 
-                @* ✅ URL DÜZELTİLDİ: FullBackdropUrl özelliği doğru sözdizimi ile kullanılıyor *@
+                
                 <div class="hero-backdrop" style="background-image: url('@movie.FullBackdropUrl');">
                     <div class="overlay-gradient"></div>
 
@@ -44,7 +44,7 @@
 
 <style>
     .hero-backdrop {
-        height: 70vh; /* Ekran yüksekliğinin %70'i */
+        height: 70vh; 
         background-size: cover;
         background-position: center top;
         position: relative;

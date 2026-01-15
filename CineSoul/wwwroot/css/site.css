@@ -29,3 +29,55 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+:root {
+    --rose-600: #e11d48;
+    --rose-500: #f43f5e;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+}
+
+/* Smooth Transitions */
+.transition-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide Scrollbar but keep functionality */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Movie Card Hover */
+.movie-card-info {
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%);
+}
+
+/* Glassmorphism for Auth and Profile */
+.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Poster Play Button Pulse */
+@keyframes pulse-rose {
+    0% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(225, 29, 72, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+    }
+}
+
+.animate-pulse-rose {
+    animation: pulse-rose 2s infinite;
+}

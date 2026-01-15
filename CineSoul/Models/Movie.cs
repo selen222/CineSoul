@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; // Veritabanı ayarları için gerekli
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace CineSoul.Models
@@ -10,6 +10,7 @@ namespace CineSoul.Models
     {
         [Key]
         [JsonPropertyName("id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
         [JsonPropertyName("title")]
@@ -22,7 +23,7 @@ namespace CineSoul.Models
         public string Overview { get; set; }
 
         [JsonPropertyName("release_date")]
-        public DateTime? ReleaseDate { get; set; } 
+        public string ReleaseDate { get; set; } 
 
         [JsonPropertyName("vote_average")]
         public double VoteAverage { get; set; }
@@ -42,8 +43,16 @@ namespace CineSoul.Models
         [JsonPropertyName("popularity")]
         public double Popularity { get; set; }
 
-        // --- DİKKAT: SQL Hatasını önlemek için NotMapped ekledik ---
-        // Bu alan API'den gelir ama Veritabanına sütun olarak kaydedilmez.
+        [JsonPropertyName("tagline")]
+        public string Tagline { get; set; }
+
+        [JsonPropertyName("runtime")]
+        public int? Runtime { get; set; }
+
+        [NotMapped]
+        [JsonPropertyName("genres")]
+        public List<MovieGenre> Genres { get; set; }
+
         [NotMapped]
         [JsonPropertyName("genre_ids")]
         public List<int> GenreIds { get; set; }
@@ -55,10 +64,8 @@ namespace CineSoul.Models
         public bool Video { get; set; }
         public string TrailerUrl { get; set; }
         public string Director { get; set; }
-        public string Cast { get; set; } // Örn: "Brad Pitt, Edward Norton"
-
-        // 3. Carousel Kategorileri (Trendler, Yeni Çıkanlar vb.)
-        // Veritabanına kaydederken bunları biz işaretleyeceğiz.
+        public string Cast { get; set; }
+        public string Screenwriter { get; set; }
         public bool IsTrending { get; set; }
         public bool IsNewRelease { get; set; }
 
@@ -75,12 +82,20 @@ namespace CineSoul.Models
         {
             get
             {
-                if (ReleaseDate.HasValue)
+                if (!string.IsNullOrEmpty(ReleaseDate) && DateTime.TryParse(ReleaseDate, out DateTime parsedDate))
                 {
-                    return ReleaseDate.Value.Year.ToString();
+                    return parsedDate.Year.ToString();
                 }
                 return "N/A";
             }
         }
+    }
+    public class MovieGenre
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
     }
 }

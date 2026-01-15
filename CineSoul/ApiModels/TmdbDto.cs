@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-// API verilerini tutmak için ayrı bir namespace kullanıyoruz.
+
 namespace CineSoul.ApiModels
 {
     // TMDB'den gelen tek bir film/dizi detayını temsil eden ana DTO (Data Transfer Object)
@@ -17,7 +17,7 @@ namespace CineSoul.ApiModels
         public int Budget { get; set; }
 
         [JsonPropertyName("genres")]
-        public List<TmdbGenre> Genres { get; set; } // İçindeki sınıfı da TmdbGenre olarak güncelledik
+        public List<TmdbGenre> Genres { get; set; }
 
         [JsonPropertyName("homepage")]
         public string Homepage { get; set; }
@@ -80,14 +80,15 @@ namespace CineSoul.ApiModels
         public int Vote_Count { get; set; }
 
 
+
         [JsonPropertyName("videos")]
-        public TmdbVideos Videos { get; set; } // Hata 1 düzeltildi
+        public TmdbVideos Videos { get; set; } 
 
         [JsonPropertyName("credits")]
-        public TmdbCredits Credits { get; set; } // Hata 2, 3 ve 4 düzeltildi
+        public TmdbCredits Credits { get; set; }
     }
 
-    // YENİ NOT: Ad çakışmasını önlemek için Genre ismini TmdbGenre olarak değiştirdik
+
     public class TmdbGenre
     {
         [JsonPropertyName("id")]
@@ -131,23 +132,24 @@ namespace CineSoul.ApiModels
     }
 
     // =======================
-    // KREDİLER (OYUNCULAR VE YÖNETMENLER)
+    // OYUNCULAR VE YÖNETMENLER
     // =======================
     public class TmdbCredits
     {
 
+
         [JsonPropertyName("cast")]
-        public List<TmdbCast> Cast { get; set; } // Not: Razor'da küçük 'cast' kullanılmıştı. Modelde büyük 'Cast' kullanıldı.
+        public List<TmdbCast> Cast { get; set; } 
 
         [JsonPropertyName("crew")]
-        public List<TmdbCrew> Crew { get; set; } // Not: Razor'da küçük 'crew' kullanılmıştı. Modelde büyük 'Crew' kullanıldı.
+        public List<TmdbCrew> Crew { get; set; }
     }
 
     public class TmdbCast
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }
-        // Diğer alanlar opsiyonel: character, profile_path vb.
+
     }
 
     public class TmdbCrew
@@ -156,7 +158,7 @@ namespace CineSoul.ApiModels
         public string Name { get; set; }
 
         [JsonPropertyName("job")]
-        public string Job { get; set; } // Yönetmenlik, Yapımcılık gibi görevler
+        public string Job { get; set; }
     }
 
     // =======================
@@ -164,23 +166,21 @@ namespace CineSoul.ApiModels
     // =======================
     public class TmdbVideos
     {
-        // TMDB Videos objesinin ana ID'si film ID'si ile aynıdır.
-        // [JsonPropertyName("id")] 
-        // public int Id { get; set; }
+
 
         [JsonPropertyName("results")]
-        public List<TmdbVideoResult> Results { get; set; } // Not: Razor'da küçük 'results' kullanılmıştı. Modelde büyük 'Results' kullanıldı.
+        public List<TmdbVideoResult> Results { get; set; }
     }
 
     public class TmdbVideoResult
     {
         [JsonPropertyName("key")]
-        public string Key { get; set; } // YouTube video kodu
+        public string Key { get; set; }
 
         [JsonPropertyName("site")]
-        public string Site { get; set; } // "YouTube" veya "Vimeo"
+        public string Site { get; set; }
 
         [JsonPropertyName("type")]
-        public string Type { get; set; } // "Trailer", "Teaser", vb.
+        public string Type { get; set; } 
     }
 }

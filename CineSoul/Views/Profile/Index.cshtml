@@ -1,5 +1,273 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CineSoul.Models.UserList
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> UserManager
+@inject CineSoul.Services.TmdbService TmdbService
+@inject CineSoul.Data.ApplicationDbContext Context
+
 @{
+    ViewData["Title"] = "Profilim";
+    var user = await UserManager.GetUserAsync(User);
+    var movies = new List<CineSoul.Models.Movie>();
+
+    if (Model?.Items != null && Model.Items.Any())
+    {
+        var movieIds = Model.Items.Select(i => i.MovieId).ToList();
+        movies = await TmdbService.GetMultipleMoviesAsync(movieIds);
+    }
+
+    var watchHistory = await Context.WatchHistories
+        .Where(w => w.UserId == user.Id)
+        .OrderByDescending(w => w.WatchedAt)
+        .Take(5)
+        .ToListAsync();
+
+    var userRatings = ViewBag.UserRatings as List<CineSoul.Models.Rating>;
+}
+
+<div class="container mt-5 pt-4">
+    <div class="profile-card shadow-lg overflow-hidden rounded-4 bg-dark text-white border border-secondary">
+        <div class="profile-header position-relative" style="height: 200px; background: linear-gradient(to right, #2c0101, #000);">
+            <div class="profile-img-container position-absolute" style="bottom: -50px; left: 40px; z-index: 2;">
+                <img src="@(user?.ProfilePicturePath ?? "/images/default_avatar.png")?v=@DateTime.Now.Ticks"
+                     class="rounded-3 border border-4 border-dark shadow"
+                     style="width: 140px; height: 140px; object-fit: cover;"
+                     alt="Profil Fotoğrafı">
+            </div>
+        </div>
+
+        <div class="profile-info-section px-5 pt-3 pb-4 border-bottom border-secondary" style="margin-left: 180px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">@(user?.DisplayName ?? User.Identity.Name)</h2>
+                    <div class="d-flex flex-column gap-1 mt-1">
+                        <span class="text-light opacity-75 small">
+                            <i class="fas fa-envelope me-2 text-danger"></i>@user?.Email
+                        </span>
+                        <span class="text-light opacity-75 small">
+                            <i class="fas fa-calendar-alt me-2 text-danger"></i>@user?.JoinedAt.ToString("dd MMMM yyyy") tarihinde katıldı
+                        </span>
+                    </div>
+                </div>
+                <a asp-controller="Profile" asp-action="Edit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-edit"></i> Profili Düzenle
+                </a>
+            </div>
+        </div>
+
+        <div class="p-5">
+            <h5 class="mb-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <span><i class="fas fa-film text-danger me-2"></i> Film Listem</span>
+                    @if (movies.Any())
+                    {
+                        <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.7rem;">@movies.Count Film</span>
+                        <a asp-controller="Movies" asp-action="Index" class="btn btn-sm btn-outline-danger rounded-circle ms-3" title="Yeni Film Ekle" style="width: 30px; height: 30px; padding: 0; line-height: 28px;">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+                </div>
+            </h5>
+
+            @if (movies.Any())
+            {
+                <div id="movieCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        @for (int i = 0; i < movies.Count; i += 4)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <div class="row g-3">
+                                    @foreach (var movie in movies.Skip(i).Take(4))
+                                    {
+                                        <div class="col-md-3">
+                                            <div class="card bg-transparent border-0 movie-hover">
+                                                <div class="position-relative">
+                                                    <img src="https://image.tmdb.org/t/p/w500@(movie.PosterPath)" class="card-img-top rounded-3 shadow" alt="@movie.Title">
+                                                    <div class="movie-overlay d-flex flex-column align-items-center justify-content-center rounded-3 gap-2">
+                                                        <a href="/Movies/Details/@movie.Id" class="btn btn-sm btn-danger rounded-pill w-75">Detaylar</a>
+                                                        <form asp-controller="Profile" asp-action="RemoveFromList" method="post" class="w-75">
+                                                            <input type="hidden" name="movieId" value="@movie.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-light rounded-pill w-100">
+                                                                <i class="fas fa-trash-alt me-1"></i> Listeden Çıkar
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body p-2 text-center">
+                                                    <p class="small fw-bold text-truncate mb-0 text-white">@movie.Title</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    @if (movies.Count > 4)
+                    {
+                        <button class="carousel-control-prev" type="button" data-bs-target="#movieCarousel" data-bs-slide="prev" style="width: 5%; left: -50px;">
+                            <i class="fas fa-chevron-left fs-3 text-white"></i>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#movieCarousel" data-bs-slide="next" style="width: 5%; right: -50px;">
+                            <i class="fas fa-chevron-right fs-3 text-white"></i>
+                        </button>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 border border-secondary border-dashed rounded-3 bg-secondary bg-opacity-10">
+                    <i class="fas fa-clapperboard fa-3x text-light mb-3 opacity-50"></i>
+                    <h5 class="text-light">Listeniz henüz boş</h5>
+                    <p class="text-light small">Filmleri keşfedip "Listeye Ekle" butonuna basarak burayı doldurabilirsiniz.</p>
+                    <a asp-controller="Movies" asp-action="Index" class="btn btn-outline-danger btn-sm mt-2 px-4 rounded-pill"> Filmleri Keşfet</a>
+                </div>
+            }
+
+            @* YENİ: PUANLADIĞIM FİLMLER TABLOSU *@
+            <div class="mt-5 pt-4 border-top border-secondary">
+                <h5 class="text-white mb-4"><i class="fas fa-star text-warning me-2"></i> Puanladığım Filmler</h5>
+                @if (userRatings != null && userRatings.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle border-secondary">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 50%">Film</th>
+                                    <th>Puanım</th>
+                                    <th>Tarih</th>
+                                    <th class="text-end">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var rating in userRatings)
+                                {
+                                    <tr id="rating-row-@rating.MovieId">
+                                        <td>
+                                            <a href="/Movies/Details/@rating.MovieId" class="text-white text-decoration-none fw-bold">
+                                                @rating.MovieTitle
+                                            </a>
+                                        </td>
+                                        <td><span class="badge bg-warning text-dark px-3">⭐ @rating.Value / 10</span></td>
+                                        <td class="text-muted small">@rating.RatedAt.ToString("dd.MM.yyyy")</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteMyRating(@rating.MovieId)">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small">Henüz bir filme puan vermediniz.</p>
+                }
+            </div>
+
+            @* İZLEME GEÇMİŞİ *@
+            <div class="mt-5 pt-4 border-top border-secondary">
+                <h5 class="text-white mb-4"><i class="fas fa-history text-danger me-2"></i> Son İncelediklerim</h5>
+                <div class="row g-3">
+                    @if (watchHistory.Any())
+                    {
+                        foreach (var item in watchHistory)
+                        {
+                            <div class="col-6 col-md-2">
+                                <a href="/Movies/Details/@item.MovieId" class="text-decoration-none">
+                                    <div class="card bg-transparent border-0 history-card">
+                                        <img src="https://image.tmdb.org/t/p/w200/@item.PosterPath" class="card-img-top rounded-3" alt="@item.MovieTitle">
+                                        <div class="card-body p-1">
+                                            <p class="small text-white text-truncate mb-0">@item.MovieTitle</p>
+                                            <span class="text-muted" style="font-size: 0.7rem;">@item.WatchedAt.ToString("dd/MM HH:mm")</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted small">Henüz bir film incelemediniz.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-card {
+        background-color: #0f0f0f;
+    }
+
+    .history-card {
+        transition: all 0.2s ease;
+        opacity: 0.8;
+        cursor: pointer;
+    }
+
+        .history-card:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+    .movie-hover {
+        transition: transform 0.3s ease;
+    }
+
+        .movie-hover:hover {
+            transform: translateY(-10px);
+        }
+
+    .movie-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .movie-hover:hover .movie-overlay {
+        opacity: 1;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+
+    .carousel-control-prev, .carousel-control-next {
+        opacity: 0.7;
+    }
+
+        .carousel-control-prev:hover, .carousel-control-next:hover {
+            opacity: 1;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        function deleteMyRating(movieId) {
+            if (confirm('Bu puanı silmek istediğinize emin misiniz?')) {
+                fetch(`/Movies/DeleteRating/${movieId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        const row = document.getElementById(`rating-row-${movieId}`);
+                        if (row) row.remove();
+                    } else {
+                        alert("Puan silinirken bir hata oluştu.");
+                    }
+                });
+            }
+        }
+    </script>
 }

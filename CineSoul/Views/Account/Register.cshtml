@@ -6,52 +6,51 @@
 
 <div class="row justify-content-center mt-5">
     <div class="col-md-6 col-lg-5">
-        <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card shadow-lg border-0 rounded-lg bg-secondary text-white">
             <div class="card-header bg-dark text-white text-center">
                 <h3 class="font-weight-light my-4">Yeni Hesap Oluştur</h3>
             </div>
-            <div class="card-body">
-
+            <div class="card-body bg-dark">
                 <form asp-controller="Account" asp-action="Register" method="post">
                     @* Genel Doğrulama Hataları *@
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
 
                     @* E-Posta Alanı *@
-                    <div class="form-floating mb-3">
-                        <input asp-for="Email" class="form-control" placeholder="name@example.com" autocomplete="email" />
-                        <label asp-for="Email"></label>
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                    <div class="form-floating mb-3 text-dark">
+                        <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                        <label asp-for="Email">E-Posta Adresi</label>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
                     @* Görünen Ad Alanı *@
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-3 text-dark">
                         <input asp-for="DisplayName" class="form-control" placeholder="Kullanıcı Adınız" />
-                        <label asp-for="DisplayName"></label>
-                        <span asp-validation-for="DisplayName" class="text-danger"></span>
+                        <label asp-for="DisplayName">Görünen Ad</label>
+                        <span asp-validation-for="DisplayName" class="text-danger small"></span>
                     </div>
 
                     @* Şifre Alanı *@
-                    <div class="form-floating mb-3">
-                        <input asp-for="Password" class="form-control" placeholder="Şifre" autocomplete="new-password" />
-                        <label asp-for="Password"></label>
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                    <div class="form-floating mb-3 text-dark">
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Şifre" />
+                        <label asp-for="Password">Şifre</label>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
                     @* Şifre Tekrarı Alanı *@
-                    <div class="form-floating mb-3">
-                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Şifre Tekrarı" autocomplete="new-password" />
-                        <label asp-for="ConfirmPassword"></label>
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    <div class="form-floating mb-3 text-dark">
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Şifre Tekrarı" />
+                        <label asp-for="ConfirmPassword">Şifre Tekrarı</label>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg mt-3">Kayıt Ol</button>
+                        <button type="submit" class="btn btn-danger btn-lg mt-3">Kayıt Ol</button>
                     </div>
                 </form>
             </div>
-            <div class="card-footer text-center py-3">
-                <div class="small">
-                    Hesabınız var mı? <a asp-controller="Account" asp-action="Login">Giriş Yap</a>
+            <div class="card-footer bg-dark text-center py-3 border-top border-secondary">
+                <div class="small text-muted">
+                    Hesabınız var mı? <a asp-controller="Account" asp-action="Login" class="text-danger">Giriş Yap</a>
                 </div>
             </div>
         </div>
