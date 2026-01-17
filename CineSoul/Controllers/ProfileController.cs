@@ -32,7 +32,6 @@ namespace CineSoul.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Challenge();
 
-            // 1. Son İncelediklerim (WatchHistory) verilerini çekiyoruz
             var recentMovies = await _context.WatchHistories
                 .Include(h => h.Movie)
                 .Where(h => h.UserId == userId)
@@ -41,20 +40,17 @@ namespace CineSoul.Controllers
                 .Select(h => h.Movie)
                 .ToListAsync();
 
-            // 2. İzleme Listesi ID'lerini çekiyoruz
             var watchlistIds = await _context.UserListItems
                 .Where(li => li.UserList.OwnerId == userId)
                 .Select(li => li.MovieId)
                 .ToListAsync();
 
-            // 3. ViewModel doldurma (Referans hatasını önlemek için tam ad kullanıldı)
             var profileViewModel = new CineSoul.ViewModels.ProfileViewModel
             {
                 RecentMovies = recentMovies,
                 Watchlist = watchlistIds
             };
 
-            // 4. Profil sayfasında asıl dönecek olan UserList objesi
             var userList = await _context.UserLists
                 .Include(l => l.Items)
                 .FirstOrDefaultAsync(l => l.OwnerId == userId && l.Type == ListType.Watchlist);
@@ -64,13 +60,11 @@ namespace CineSoul.Controllers
                 userList = new UserList { Items = new List<UserListItem>() };
             }
 
-            // 5. Puanlamaları çek ve ViewBag'e koy
             ViewBag.UserRatings = await _context.Ratings
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.RatedAt)
                 .ToListAsync();
 
-            // 6. ViewModel'i View'da kullanabilmek için ViewData'ya aktar
             ViewData["ProfileInfo"] = profileViewModel;
 
             return View(userList);
@@ -121,16 +115,51 @@ namespace CineSoul.Controllers
                 {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
                     if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
                     var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.ProfilePictureFile.FileName);
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create)) { await model.ProfilePictureFile.CopyToAsync(fileStream); }
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.ProfilePictureFile.CopyToAsync(fileStream);
+                    }
+
                     user.ProfilePicturePath = "/uploads/profiles/" + uniqueFileName;
                 }
+
                 await _userManager.UpdateAsync(user);
                 return RedirectToAction(nameof(Index));
             }
+
             model.ExistingPicturePath = user.ProfilePicturePath;
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveProfilePicture()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false, message = "Kullanıcı bulunamadı." });
+
+            if (!string.IsNullOrEmpty(user.ProfilePicturePath) && !user.ProfilePicturePath.Contains("default"))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.ProfilePicturePath.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            user.ProfilePicturePath = null;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Json(new { success = true });
+            }
+
+            return Json(new { success = false, message = "Güncelleme sırasında bir hata oluştu." });
         }
     }
 }

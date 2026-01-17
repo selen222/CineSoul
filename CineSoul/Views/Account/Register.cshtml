@@ -12,7 +12,6 @@
             </div>
             <div class="card-body bg-dark">
                 <form asp-controller="Account" asp-action="Register" method="post">
-                    @* Genel Doğrulama Hataları *@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
 
                     @* E-Posta Alanı *@
@@ -49,7 +48,7 @@
                 </form>
             </div>
             <div class="card-footer bg-dark text-center py-3 border-top border-secondary">
-                <div class="small text-muted">
+                <div class="small text-white-50">
                     Hesabınız var mı? <a asp-controller="Account" asp-action="Login" class="text-danger">Giriş Yap</a>
                 </div>
             </div>

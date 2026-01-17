@@ -20,7 +20,6 @@
                         
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-                        @* Liste Adı *@
                         <div class="mb-4">
                             <label asp-for="Name" class="form-label text-light fw-bold small">LİSTE ADI</label>
                             <input asp-for="Name" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2"
@@ -28,7 +27,6 @@
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
-                        @* Açıklama *@
                         <div class="mb-4">
                             <label asp-for="Description" class="form-label text-light fw-bold small">AÇIKLAMA (OPSİYONEL)</label>
                             <textarea asp-for="Description" class="form-control bg-secondary bg-opacity-10 border-secondary text-white"
@@ -39,7 +37,6 @@
                         
                         <input type="hidden" name="MovieIds" value="" />
 
-                        @* Butonlar *@
                         <div class="d-grid gap-3 mt-5">
                             <button type="submit" class="btn btn-danger btn-lg fw-bold rounded-3 shadow">
                                 <i class="fas fa-save me-2"></i>Listeyi Kaydet
@@ -62,7 +59,6 @@
 }
 
 <style>
-    /* Input odaklandığında kırmızı vurgu */
     .form-control:focus {
         background-color: rgba(255, 255, 255, 0.05);
         border-color: #e50914;

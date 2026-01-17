@@ -1,49 +1,102 @@
 ﻿@model List<CineSoul.Models.Movie>
 
 @{
-    var query = ViewBag.SearchQuery as string;
-    ViewData["Title"] = $"'{query}' İçin Arama Sonuçları";
+    var query = ViewBag.Query as string ?? "Arama";
+    ViewData["Title"] = query + " Arama Sonuçları";
 }
 
-<h2 class="text-white mt-4">@ViewData["Title"]</h2>
-<hr class="text-secondary" />
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+            <h2 class="text-white mb-0">"@query"</h2>
+            <p class="text-info mb-0">@Model.Count sonuç listeleniyor</p>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Filmler Sayfasına Dön</a></li>
+                <li class="breadcrumb-item active text-white-50" aria-current="page">Arama</li>
+            </ol>
+        </nav>
+    </div>
+    <hr class="text-secondary" />
 
-@if (Model != null && Model.Any())
-{
-    <p class="text-info">Toplam **@Model.Count** film bulundu.</p>
-
-    <div class="row">
-        @foreach (var movie in Model)
-        {
-            
-            if (string.IsNullOrEmpty(movie.PosterPath))
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+            @foreach (var movie in Model)
             {
-                continue;
-            }
+                var posterUrl = !string.IsNullOrEmpty(movie.PosterPath)
+                ? $"https://image.tmdb.org/t/p/w500{movie.PosterPath}"
+                : "/img/no-poster.png";
 
-            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                <div class="card bg-dark text-white h-100 border-secondary">
-                    <img src="@($"https://image.tmdb.org/t/p/w500{movie.PosterPath}")"
-                         class="card-img-top"
-                         alt="@movie.Title"
-                         style="height: 350px; object-fit: cover;" />
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-truncate text-warning">@movie.Title</h5>
-                        <p class="card-text small text-white-50 flex-grow-1">
-                            @(movie.Year.ToString() ?? "Bilinmiyor")
-                            <span class="float-end">⭐ @movie.VoteAverage.ToString("F1")</span>
-                        </p>
-                        <a asp-controller="Movies" asp-action="Details" asp-route-id="@movie.Id" class="btn btn-sm btn-info mt-auto">Detayları Gör</a>
+                <div class="col">
+                    <div class="card bg-dark text-white h-100 border-secondary shadow movie-hover">
+                        <div class="position-relative overflow-hidden">
+                            <img src="@(string.IsNullOrEmpty(movie.PosterPath) ? "/img/no-poster.png" : $"https://image.tmdb.org/t/p/w500{movie.PosterPath}")"
+                                 class="card-img-top"
+                                 alt="@movie.Title"
+                                 style="height: 350px; object-fit: cover;" />
+
+                            <div class="card-img-overlay d-flex flex-column justify-content-end bg-gradient-dark opacity-0 transition-300">
+                                <a asp-controller="Movies" asp-action="Details" asp-route-id="@movie.Id"
+                                   class="btn btn-sm btn-info fw-bold">Detayları Gör</a>
+                            </div>
+                        </div>
+                        <div class="card-body p-2 d-flex flex-column">
+                            <h6 class="card-title text-truncate text-warning mb-1">
+                                <a asp-controller="Movies" asp-action="Details" asp-route-id="@movie.Id" class="text-decoration-none text-warning">
+                                    @movie.Title
+                                </a>
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <small class="text-white-50">
+                                    @{
+                                        var releaseYear = "N/A";
+                                        if (!string.IsNullOrEmpty(movie.ReleaseDate) && movie.ReleaseDate.Length >= 4)
+                                        {
+                                            releaseYear = movie.ReleaseDate.Substring(0, 4);
+                                        }
+                                    }
+                                    @releaseYear
+                                </small>
+                                <span class="badge rounded-pill bg-secondary">⭐ @movie.VoteAverage.ToString("F1")</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-dark border-secondary text-center py-5 shadow mt-5">
+            <h4 class="text-warning">Sonuç Yok!</h4>
+            <p class="text-white">Aradığınız <strong>'@query'</strong> terimiyle eşleşen film bulunamadı.</p>
+            <a asp-action="Index" class="btn btn-outline-info btn-sm">Ana Sayfaya Dön</a>
+        </div>
+    }
+</div>
+
+<style>
+    .movie-hover {
+        transition: transform 0.2s ease;
+    }
+
+        .movie-hover:hover {
+            transform: scale(1.03);
+            z-index: 10;
+            border-color: #0dcaf0 !important;
         }
-    </div>
-}
-else
-{
-    <div class="alert alert-warning mt-5" role="alert">
-        <h4 class="alert-heading">Sonuç Yok!</h4>
-        <p>Aradığınız **'@query'** terimiyle eşleşen film bulunamadı. Lütfen arama teriminizi kontrol edin veya farklı bir kelime deneyin.</p>
-    </div>
-}
+
+    .bg-gradient-dark {
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+    }
+
+    .transition-300 {
+        transition: 0.3s;
+    }
+
+    .movie-hover:hover .card-img-overlay {
+        opacity: 1;
+    }
+</style>

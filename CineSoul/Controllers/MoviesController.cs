@@ -36,23 +36,27 @@ namespace CineSoul.Controllers
         public async Task<IActionResult> Search(string query)
         {
             if (string.IsNullOrEmpty(query)) return RedirectToAction(nameof(Index));
+
             var searchResults = await _tmdbService.SearchMoviesAsync(query);
-            ViewBag.Popular = searchResults;
-            ViewData["Title"] = "Arama Sonuçları: " + query;
-            return View("Index");
+
+            ViewBag.Query = query;
+
+            return View("Search", searchResults.ToList());
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            // Önce yerel veritabanında ara
             var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie == null)
             {
-                // Veritabanında yoksa TMDB'den çek ve kaydet
                 movie = await _tmdbService.GetFullMovieDetailsAsync(id);
                 if (movie != null)
                 {
+                    movie.BackdropPath ??= "";
+                    movie.PosterPath ??= "";
+                    movie.Overview ??= "Açıklama bulunmuyor.";
+
                     _context.Movies.Add(movie);
                     await _context.SaveChangesAsync();
                 }
@@ -64,18 +68,15 @@ namespace CineSoul.Controllers
 
             if (userId != null)
             {
-                // Kullanıcının listelerini getir
                 ViewBag.UserLists = await _context.UserLists
                     .Include(l => l.Items)
                     .Where(l => l.OwnerId == userId)
                     .ToListAsync();
 
-                // Mevcut puanını getir
                 var rating = await _context.Ratings
                     .FirstOrDefaultAsync(r => r.UserId == userId && r.MovieId == id);
                 ViewBag.UserRating = rating?.Value;
 
-                // İzleme geçmişine ekle (Hemen İzle aksiyonu veya Detay görüntüleme)
                 var alreadyExists = await _context.WatchHistories
                     .AnyAsync(w => w.UserId == userId && w.MovieId == id);
 

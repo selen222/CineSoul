@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace CineSoul.ApiModels
 {
-    // TMDB'den gelen tek bir film/dizi detayını temsil eden ana DTO (Data Transfer Object)
     public class TmdbDto
     {
         [JsonPropertyName("adult")]
@@ -131,9 +130,6 @@ namespace CineSoul.ApiModels
         public string Name { get; set; }
     }
 
-    // =======================
-    // OYUNCULAR VE YÖNETMENLER
-    // =======================
     public class TmdbCredits
     {
 
@@ -161,9 +157,6 @@ namespace CineSoul.ApiModels
         public string Job { get; set; }
     }
 
-    // =======================
-    // VİDEOLAR (FRAGMANLAR)
-    // =======================
     public class TmdbVideos
     {
 

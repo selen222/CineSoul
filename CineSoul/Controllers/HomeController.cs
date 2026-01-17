@@ -19,7 +19,6 @@ namespace CineSoul.Controllers
         }
 
         [HttpGet]
-        // URL: /Home/Index
         public async Task<IActionResult> Index()
         {
             try
@@ -42,7 +41,6 @@ namespace CineSoul.Controllers
         }
 
         [HttpGet]
-        // URL: /Home/Error
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

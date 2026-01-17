@@ -15,8 +15,7 @@
                          alt="@movie.Title"
                          style="height: 270px; object-fit: cover; border: 1px solid #444;">
                 </a>
-
-                @* Overlay *@
+                
                 <div class="overlay position-absolute w-100 h-100 d-flex flex-column justify-content-center align-items-center rounded"
                      style="top: 0; left: 0; background: rgba(0, 0, 0, 0.7); opacity: 0; transition: opacity 0.2s;">
 
@@ -27,7 +26,6 @@
                         ▶️ İzle
                     </a>
 
-                    @* HIZLI EKLEME BUTONU (AJAX DESTEKLİ) *@
                     <div class="mt-1 w-75 px-2">
                         <button type="button"
                                 class="btn btn-outline-light btn-sm w-100 rounded-pill quick-add-btn"
@@ -46,27 +44,22 @@
     }
 </div>
 
-@* AJAX Scriptini bir kez ekliyoruz *@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
-        // "quick-add-btn" sınıfına sahip butonlara tıklandığında çalışır
         $(document).off('click', '.quick-add-btn').on('click', '.quick-add-btn', function (e) {
             e.preventDefault();
             var btn = $(this);
             var movieId = btn.data('movie-id');
 
-            // Görsel geri bildirim
             var originalContent = btn.html();
             btn.html('<span class="spinner-border spinner-border-sm"></span>...').prop('disabled', true);
 
             $.post('/Movies/AddToList', { movieId: movieId }, function (response) {
-                // Başarılı olduğunda butonun rengini ve metnini değiştir
                 btn.removeClass('btn-outline-light').addClass('btn-success')
                    .html('<i class="fas fa-check small"></i> Eklendi')
                    .prop('disabled', false);
 
-                // 2 saniye sonra eski haline döndürebilirsin veya öyle kalabilir
             }).fail(function () {
                 alert("Film eklenirken bir hata oluştu veya giriş yapmanız gerekiyor.");
                 btn.html(originalContent).prop('disabled', false);
@@ -89,7 +82,6 @@
         border-radius: 10px;
     }
 
-    /* Overlay içindeki butonların hover etkisini bozmamak için */
     .overlay .btn {
         pointer-events: auto;
     }

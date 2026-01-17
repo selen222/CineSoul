@@ -18,11 +18,9 @@ namespace CineSoul.Models
         [Required]
         public int MovieId { get; set; }
 
-        // EKLEDİĞİMİZ SATIR: Bu sayede .Select(h => h.Movie) komutu çalışacak
         [ForeignKey("MovieId")]
         public virtual Movie Movie { get; set; }
 
-        // TMDB'den gelen film başlığı ve posterini hızlıca göstermek için saklıyoruz
         public string? MovieTitle { get; set; }
         public string? PosterPath { get; set; }
 

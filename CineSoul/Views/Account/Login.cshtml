@@ -12,8 +12,7 @@
                     <h3 class="fw-bold text-danger mb-0">CineSoul Giriş</h3>
                 </div>
                 <div class="card-body p-4 p-lg-5">
-                    @* AntiForgeryToken eklendi *@
-                    <form asp-controller="Account" asp-action="Login" method="post">
+                    <form asp-controller="Account" asp-action="Login" method="post" id="loginForm">
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="ReturnUrl" />
 
@@ -22,21 +21,35 @@
                         @* E-Posta *@
                         <div class="mb-4">
                             <label asp-for="Email" class="form-label text-white-50 small">E-posta Adresi</label>
-                            <input asp-for="Email" class="form-control bg-secondary text-white border-0 py-2 shadow-none" placeholder="adiniz@example.com" required />
+                            <input asp-for="Email"
+                                   id="Email"
+                                   name="Email"
+                                   class="form-control bg-secondary text-white border-0 py-2 shadow-none"
+                                   placeholder="adiniz@example.com"
+                                   autocomplete="username"
+                                   autofocus
+                                   required />
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         @* Şifre *@
                         <div class="mb-4">
                             <label asp-for="Password" class="form-label text-white-50 small">Şifre</label>
-                            <input asp-for="Password" class="form-control bg-secondary text-white border-0 py-2 shadow-none" placeholder="••••••••" required />
+                            <input asp-for="Password"
+                                   id="Password"
+                                   name="Password"
+                                   type="password"
+                                   class="form-control bg-secondary text-white border-0 py-2 shadow-none"
+                                   placeholder="••••••••"
+                                   autocomplete="current-password"
+                                   required />
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
                         @* Beni Hatırla *@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div class="form-check">
-                                <input asp-for="RememberMe" class="form-check-input bg-dark border-secondary" />
+                                <input asp-for="RememberMe" id="RememberMe" name="RememberMe" class="form-check-input bg-dark border-secondary" />
                                 <label asp-for="RememberMe" class="form-check-label text-white-50 small">Beni Hatırla</label>
                             </div>
                         </div>

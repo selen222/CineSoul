@@ -9,7 +9,7 @@
                 </div>
                 <div class="card-body">
                     <form asp-controller="Profile" asp-action="Edit" method="post" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken() @* Token burası için önemli *@
+                        @Html.AntiForgeryToken()
 
                         <div class="text-center mb-4">
                             <img src="@(Model.ExistingPicturePath ?? "/images/default_avatar.png")"
@@ -52,7 +52,6 @@
 
                 fetch('/Profile/RemoveProfilePicture', {
                     method: 'DELETE',
-                    // Header kısmını Controller'da IgnoreAntiforgeryToken kullandığımız için basitleştirebiliriz
                 })
                 .then(response => {
                     if (response.ok) {

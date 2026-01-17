@@ -7,18 +7,11 @@ namespace CineSoul.Services
 {
     public interface ITmdbService
     {
-        // ------------------------------------
-        // ANA SAYFA METOTLARI
-        // ------------------------------------
         Task<List<Movie>> GetNewReleasesAsync();
         Task<List<Movie>> GetTrendingMoviesAsync();
         Task<List<Movie>> GetPopularMoviesAsync();
         Task<List<Movie>> GetNowPlayingMoviesAsync();
         Task<List<Movie>> GetUpcomingMoviesAsync();
-
-        // ------------------------------------
-        // DETAY ve LİSTE METOTLARI
-        // ------------------------------------
 
        
         Task<Movie> GetFullMovieDetailsAsync(int id);

@@ -16,9 +16,7 @@ namespace CineSoul.Models
         public UserList UserList { get; set; }
 
         [Required]
-        public int MovieId { get; set; } // TMDB ID
-
-        // Performans için film bilgilerini burada da saklıyoruz
+        public int MovieId { get; set; }
         public string MovieTitle { get; set; }
         public string PosterPath { get; set; }
 

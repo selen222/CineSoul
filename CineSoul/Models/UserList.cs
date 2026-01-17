@@ -26,8 +26,6 @@ namespace CineSoul.Models
         [Required]
         public string OwnerId { get; set; }
         public AppUser Owner { get; set; }
-
-        // YENİ: Artık filmleri List<int> olarak değil, UserListItem koleksiyonu olarak tutuyoruz.
         public virtual ICollection<UserListItem> Items { get; set; } = new List<UserListItem>();
     }
 }

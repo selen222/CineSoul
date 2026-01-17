@@ -2,6 +2,7 @@
 using CineSoul.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace CineSoul.Controllers
@@ -18,9 +19,6 @@ namespace CineSoul.Controllers
             _signInManager = signInManager;
         }
 
-        // ==========================================
-        // 1. KAYIT İŞLEMLERİ (REGISTER)
-        // ==========================================
         [HttpGet]
         public IActionResult Register()
         {
@@ -36,10 +34,10 @@ namespace CineSoul.Controllers
             {
                 var user = new AppUser
                 {
-                    UserName = model.Email, // E-postayı kullanıcı adı olarak set ediyoruz
+                    UserName = model.Email,
                     Email = model.Email,
                     DisplayName = model.DisplayName,
-                    JoinedAt = DateTime.Now // Daha önce eklediğimiz katılma tarihi
+                    JoinedAt = DateTime.Now
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -58,9 +56,6 @@ namespace CineSoul.Controllers
             return View(model);
         }
 
-        // ==========================================
-        // 2. GİRİŞ İŞLEMLERİ (LOGIN)
-        // ==========================================
         [HttpGet]
         public IActionResult Login(string returnUrl = null)
         {
@@ -74,12 +69,11 @@ namespace CineSoul.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Önemli: E-posta ile kullanıcıyı buluyoruz
                 var user = await _userManager.FindByEmailAsync(model.Email);
 
                 if (user != null)
                 {
-                    // Kullanıcı bulunduysa UserName üzerinden şifre kontrolü yapıyoruz
+                   
                     var result = await _signInManager.PasswordSignInAsync(
                         user.UserName,
                         model.Password,
@@ -101,9 +95,6 @@ namespace CineSoul.Controllers
             return View(model);
         }
 
-        // ==========================================
-        // 3. ÇIKIŞ İŞLEMLERİ (LOGOUT)
-        // ==========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()

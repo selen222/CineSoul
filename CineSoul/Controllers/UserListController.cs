@@ -73,7 +73,6 @@ namespace CineSoul.Controllers
         }
     }
 
-    // Hata CS0246 Çözümü: Bu sınıfın burada olması gerekiyor
     public class ToggleMovieRequest
     {
         public int TmdbMovieId { get; set; }

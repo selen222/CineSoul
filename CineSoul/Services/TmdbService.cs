@@ -24,11 +24,6 @@ namespace CineSoul.Services
             _httpClient = httpClient;
         }
 
-        // ========================================== 
-        // 1. ANA SAYFA METODLAR
-        // ==========================================
-
-        
         public async Task<List<Movie>> GetTrendingMoviesAsync()
         {
             var url = $"{_baseUrl}/trending/movie/week?api_key={_apiKey}&language={_language}";
@@ -68,12 +63,6 @@ namespace CineSoul.Services
             return response?.Results ?? new List<Movie>();
         }
 
-
-        // ==========================================
-        // 2. DETAY VE ARAMA İŞLEMLERİ
-        // ==========================================
-
-        
         public async Task<Movie> GetBaseMovieDetailsAsync(int id)
         {
             var url = $"{_baseUrl}/movie/{id}?api_key={_apiKey}&language={_language}";

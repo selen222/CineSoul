@@ -14,7 +14,7 @@ namespace CineSoul.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<UserList> UserLists { get; set; }
-        public DbSet<UserListItem> UserListItems { get; set; } // Yeni Tablomuz!
+        public DbSet<UserListItem> UserListItems { get; set; }
         public DbSet<WatchHistory> WatchHistories { get; set; }
         public DbSet<Rating> Ratings { get; set; }
 
@@ -22,7 +22,6 @@ namespace CineSoul.Data
         {
             base.OnModelCreating(builder);
 
-            // UserList ve UserListItem arasındaki Bire-Çok ilişki
             builder.Entity<UserListItem>()
                 .HasOne(ui => ui.UserList)
                 .WithMany(l => l.Items)
